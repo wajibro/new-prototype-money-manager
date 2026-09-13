@@ -1,0 +1,14 @@
+<h3>Selamat Datang di Prototype Ditemoney</h3>
+<h4>Silahkan masukkan pin terlebih dahulu</h4>
+
+<% if (tab === 'bisa') { %>
+    <form action="/auth/login" method="POST">
+        <input type="number" name="input_pin" placeholder="Masukkan PIN" required>
+        <button type="submit">Login</button>
+    </form>
+<% } %> 
+
+<% if (tab === 'gagal') { %>
+    <p style="color: red;">PIN yang anda masukkan salah, coba lagi</p>
+    <a href="/auth?tab=bisa">Kembali</a>
+<% } %>

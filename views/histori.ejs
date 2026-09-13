@@ -1,0 +1,166 @@
+<div class="container">
+    <div class="header">
+        <h2>Ditemoney - Money Manager</h2>
+        <button style="background-color: red;">
+            <a href="/auth/logout" class="logout-btn" style="text-decoration: none; color: black;">Logout</a>
+        </button>
+    </div>
+    <br>
+
+    <!-- Ringkasan Keuangan (Data dari Supabase) -->
+    <table border="1" cellpading="5" cellspacing="0">
+        <body>
+            <tr>
+                <td colspan="2">
+                    Total Saldo: <%= totalSaldo %>
+                </td>
+            </tr>
+            <tr>
+                <td>Total Pengluaran</td>
+                <td>Total Pemasukan</td>
+            </tr>
+            <tr>
+                <td>
+                    <p style="color: red;"><%= totalPengeluaran %></p>
+                </td>
+                <td>
+                    <p style="color: green;"><%= totalPemasukan %></p>
+                </td>
+            </tr>
+        </body>
+    </table>
+    <br>
+
+    <div>
+        <button>
+            <a href="/akun_tabungan">Akun Tabungan</a>
+        </button>
+        <button>
+            <a href="/kategori?tab=pengeluaran">Kategori</a>
+        </button>
+        <button>
+            <a href="/histori">Histori</a>
+        </button>
+    </div>
+    <br>
+
+    <!-- PANEL FORM EDIT HISTORI JIKA AKTIF -->
+    <% if (editHistori) { %>
+        <div style="background: #fff3cd; padding: 20px; border-radius: 6px; margin-bottom: 30px; border: 1px solid #ffe69c;">
+            <h3>Edit Histori Data</h3>
+            <form action="/histori_data/update/<%= editHistori.id %>" method="POST">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>Akun Sumber:</td>
+                            <td>
+                                <select name="input_nama_akun_baru" required>
+                                    <% akunTabungan.forEach(function(p) { %>
+                                        <option value="<%= p.nama_akun %>" <%= editHistori.nama_akun === p.nama_akun ? 'selected' : '' %>><%= p.nama_akun %></option>
+                                    <% }); %>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Kategori:</td>
+                            <td>
+                                <select name="input_kategori_baru" required>
+                                    <% kategori.forEach(function(p) { %>
+                                        <option value="<%= p.nama_kategori %>" <%= editHistori.kategori === p.nama_kategori ? 'selected' : '' %>><%= p.nama_kategori %></option>
+                                    <% }); %>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Sub Kategori:</td>
+                            <td><input type="text" name="input_sub_kategori_baru" value="<%= editHistori.sub_kategori %>"></td>
+                        </tr>
+                        <tr>
+                            <td>Nominal Perubahan:</td>
+                            <td><input type="number" name="input_perubahan_baru" value="<%= editHistori.perubahan %>" required></td>
+                        </tr>
+                        <tr>
+                            <td>Tanggal:</td>
+                            <td><input type="date" name="input_tanggal_baru" value="<%= editHistori.tanggal %>" required></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <a href="/histori_data" style="margin-right:15px; color:#dc3545; text-decoration:none; font-weight:bold;">Batal Edit</a>
+                                <button type="submit" style="background:#198754; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;">Simpan Perubahan</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+    <% } %>
+
+    <!-- BLOK TABEL UTAMA HISTORI DATA HARIAN -->
+    <h3>Daftar Riwayat Transaksi</h3>
+    
+    <table>
+        <tbody>
+            <tr>
+                <td>
+                    <% dataHistoris.forEach(function(hari) { %>
+                    <table border="1" cellpadding="5" cellspacing="0">
+                        <thead>
+                            <tr class="tgl-header">
+                                <td colspan="2"><%= hari.tanggalTeks %></td>
+                                <td class="text-pemasukan">
+                                    <p style="color: green;">Pemasukan: Rp <%= hari.pemasukan %></p>
+                                </td>
+                                <td class="text-pengeluaran">
+                                    <p style="color: red;">Pengeluaran: Rp<%= hari.pengeluaran %></p>
+                                </td>
+                                <td style="font-weight:bold;" colspan="2">
+                                    Net: Rp <%= hari.cashFlow %>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Akun Rekening</th>
+                                <th>Kategori</th>
+                                <th>Jenis</th>
+                                <th>Sub Kategori</th>
+                                <th>Nominal</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% hari.dataSehari.forEach(function(p) { %>
+                                <tr>
+                                    <td><%= p.nama_akun %></td>
+                                    <td><%= p.nama_kategori %></td>
+                                    <td>
+                                        <span class="<%= p.jenis === 'Pemasukan' ? 'text-pemasukan' : 'text-pengeluaran' %>">
+                                            <%= p.jenis %>
+                                        </span>
+                                    </td>
+                                    <td><%= p.sub_kategori %></td>
+                                    <td>
+                                        <span class="<%= p.jenis === 'Pemasukan' ? 'text-pemasukan' : 'text-pengeluaran' %>">
+                                            Rp <%= p.perubahan.toLocaleString('id-ID', { minimumFractionDigits: 2 }) %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <% if (p.jenis === 'Pemasukan' || p.jenis === 'Pengeluaran') { %>
+                                            <button>
+                                                <a href="/histori_data?edit_histori_id=<%= p.id %>" text-decoration:none; font-weight:bold; margin-right:10px;">Edit</a>
+                                            </button>
+                                        <% } %>
+                                        
+                                        <form action="/histori_data/hapus/<%= p.id %>" method="POST" style="display:inline;" onsubmit="return confirm('Hapus data histori ini secara permanen?')">
+                                            <button type="submit" color:#dc3545; cursor:pointer; font-weight:bold; padding:0;">Hapus</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                    <br>
+                    <% }); %>       
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

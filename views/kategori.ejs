@@ -1,0 +1,275 @@
+<div class="container">
+    <!-- Header Utama -->
+    <div class="header">
+        <h2>Ditemoney - Money Manager</h2>
+        <button style="background-color: red;">
+            <a href="/auth/logout" class="logout-btn" style="text-decoration: none; color: black;">Logout</a>
+        </button>
+    </div>
+    <br>
+
+    <!-- Alert Pesan jika ada info dari server -->
+    <% if (message) { %>
+        <div class="alert"><%= message %></div>
+    <% } %>
+
+    <!-- Ringkasan Keuangan (Data dari Supabase) -->
+    <table border="1" cellpading="5" cellspacing="0">
+        <body>
+            <tr>
+                <td colspan="2">
+                    Total Saldo: <%= totalSaldo %>
+                </td>
+            </tr>
+            <tr>
+                <td>Total Pengluaran</td>
+                <td>Total Pemasukan</td>
+            </tr>
+            <tr>
+                <td>
+                    <p style="color: red;"><%= totalPengeluaran %></p>
+                </td>
+                <td>
+                    <p style="color: green;"><%= totalPemasukan %></p>
+                </td>
+            </tr>
+        </body>
+    </table>
+    <br>
+    <div>
+        <button>
+            <a href="/akun_tabungan">Akun Tabungan</a>
+        </button>
+        <button>
+            <a href="/kategori?tab=pengeluaran">Kategori</a>
+        </button>
+        <button>
+            <a href="/histori">Histori</a>
+        </button>
+    </div>
+    <br>
+
+    <!-- Sistem Navigasi Tab Konten (Menjaga tab tetap aktif setelah form di-submit) -->
+    <div>
+        <button>
+            <a href="/kategori?tab=pengeluaran" class="tab-link <%= tabAktif === 'pengeluaran' ? 'active' : '' %>">Catat Pengeluaran</a>
+        </button>
+        <button>
+            <a href="/kategori?tab=pemasukan" class="tab-link <%= tabAktif === 'pemasukan' ? 'active' : '' %>">Catat Pemasukan</a>
+        </button>
+    </div>
+
+    <!-- TAB 1: FORM PENGELUARAN -->
+    <% if (tabAktif === 'pengeluaran') { %>
+        <form action="/kategori/simpan/pengeluaran" method="POST">
+            <table border="1" cellpading="5" cellspacing="0">
+                <thead>
+                    <tr>
+                        <td colspan="2">
+                            <label>Data <%= tabAktif %> baru:</label>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <label>Tanggal</label>
+                        </td>
+                        <td>
+                            <input type="date" name="input_tanggal" required value="<%= new Date().toISOString().slice(0, 10) %>">*
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>Kategori: </label>
+                        </td>
+                        <td>
+                            <select name="input_kategori" required>
+                                <option value="">-- Pilih Kategori --</option>
+                                <% kategori.forEach(function(kat) { %>
+                                    <% if (kat.jenis === 'Pengeluaran') { %>
+                                        <option value="<%= kat.id_kategori %>"><%= kat.nama_kategori %></option>
+                                    <% } %>
+                                <% }); %>
+                            </select>*
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>Sub Kategori: </label>
+                        </td>
+                        <td>
+                            <input type="text" name="input_sub_kategori" placeholder="Makan, Jajan, dll">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>Akun Tabungan: </label>
+                        </td>
+                        <td>
+                            <select name="input_akun_tabungan" required>
+                                <option value="">-- Pilih Rekening Sumber --</option>
+                                <% akunTabungan.forEach(function(akun) { %>
+                                    <option value="<%= akun.id_akun %>"><%= akun.nama_akun %> (Saldo: Rp <%= akun.total_akun.toLocaleString('id-ID') %>)</option>
+                                <% }); %>
+                            </select>*
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>Nominal: </label>
+                        </td>
+                        <td>
+                            Rp
+                            <input type="number" name="input_total_perubahan" placeholder="Masukkan nominal angka saja" required min="1">*
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <button type="submit" style="background-color: red; color: white;">Simpan Transaksi Pengeluaran</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+        <button>
+            <a href="/kategori?tab=tambah_kategori_pengeluaran" class="tab-link <%= tabAktif === 'tambah_kategori_pengeluaran' ? 'active' : '' %>">+ Kategori Pengeluaran</a>
+        </button>
+    <% } %>
+
+    <!-- TAB 2: FORM PEMASUKAN -->
+    <% if (tabAktif === 'pemasukan') { %>
+        <form action="/kategori/simpan/pemasukan" method="POST">
+            <table border="1" cellpading="5" cellspacing="0">
+                <thead>
+                    <tr>
+                        <td colspan="2">
+                            <label>Data <%= tabAktif %> baru:</label>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <label>Tanggal: </label>
+                        </td>
+                        <td>
+                            <input type="date" name="input_tanggal" required value="<%= new Date().toISOString().slice(0, 10) %>">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>Kategori: </label>
+                        </td>
+                        <td>
+                            <select name="input_kategori" required>
+                                <option value="">-- Pilih Kategori --</option>
+                                <% kategori.forEach(function(kat) { %>
+                                    <% if (kat.jenis === 'Pemasukan') { %>
+                                        <option value="<%= kat.id_kategori %>"><%= kat.nama_kategori %></option>
+                                    <% } %>
+                                <% }); %>
+                            </select>*
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>Sub Kategori: </label>
+                        </td>
+                        <td>
+                            <input type="text" name="input_sub_kategori" placeholder="Shopee driver, Tip shopee, dll">*
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>Akun Tabungan: </label>
+                        </td>
+                        <td>
+                            <select name="input_akun_tabungan" required>
+                                <option value="">-- Pilih Rekening Target --</option>
+                                <% akunTabungan.forEach(function(akun) { %>
+                                    <option value="<%= akun.id_akun %>"><%= akun.nama_akun %></option>
+                                <% }); %>
+                            </select>*
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>Nominal: </label>
+                        </td>
+                        <td>Rp
+                            <input type="number" name="input_total_perubahan" placeholder="Masukkan nominal angka saja" required min="1">*
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <button type="submit" style="background-color: #198754; color: white;">Simpan Transaksi Pemasukan</button>
+                        </td>
+                    </tr>
+                </tbody>
+                
+            </table>
+        </form>
+        <button>
+            <a href="/kategori?tab=tambah_kategori_pemasukan" class="tab-link <%= tabAktif === 'tambah_kategori_pemasukan' ? 'active' : '' %>">+ Kategori Pemasukan</a>
+        </button>
+    <% } %>
+
+    <!-- TAB 3: TAMBAH KATEGORI PENGELUARAN -->
+    <% if (tabAktif === 'tambah_kategori_pengeluaran') { %>
+        <form action="/kategori/tambah-kategori/pengeluaran" method="POST">
+            <table border="1" cellpadding="5" cellspacing="0">
+                <thead>
+                    <tr>
+                        <td colspan="2">
+                            Tambah Kategori Pengeluaran Baru
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <label>Nama Kategori Pengeluaran Baru</label>
+                        </td>
+                        <td>
+                            <input type="text" name="input_kategori_pengeluaran_baru" placeholder="Misal: Edukasi, Liburan" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <button type="submit">Tambah Kategori Baru</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+    <% } %>
+
+    <!-- TAB 4: TAMBAH KATEGORI PEMASUKAN -->
+    <% if (tabAktif === 'tambah_kategori_pemasukan') { %>
+        <form action="/kategori/tambah-kategori/pemasukan" method="POST">
+            <table border="1" cellpadding="5" cellspacing="0">
+                <thead>
+                    <tr>
+                        <td colspan="2">
+                            Tambah Kategori Pemasukan Baru
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>Nama Kategori Pemasukan Baru</label>
+                        </td>
+                        <td>
+                            <input type="text" name="input_kategori_pemasukan_baru" placeholder="Misal: Investasi, Freelance" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <button type="submit" style="background-color: #198754;">Tambah Kategori Baru</button>
+                        </td>
+                    </tr>
+                </thead>
+            </table>
+        </form>
+    <% } %>
+</div>
