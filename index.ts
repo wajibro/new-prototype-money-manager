@@ -21,6 +21,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.use(session({
+    store: new PostgresSessionStore({
+        conString: Config.URL,
+        tableName: 'session',
+        createTableIfMissing: false
+    }),
     secret: Config.SESSION_SECRET || ')#j398Bk64MGsa=|',
     resave: false,
     saveUninitialized: false,
