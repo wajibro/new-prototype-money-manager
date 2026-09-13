@@ -15,7 +15,8 @@ export const login = (req: Request, res: Response): void => {
         const { input_pin } = req.body;
 
         const pin = parseInt(input_pin, 10);
-        const correctPin = parseInt(Config.CORRECT_PIN, 10);
+        const rawCorrectPin = Config.CORRECT_PIN || "1234"; 
+        const correctPin = parseInt(rawCorrectPin, 10);
 
         if (pin === correctPin) {
             req.session.logged_in = true;
@@ -24,7 +25,8 @@ export const login = (req: Request, res: Response): void => {
             req.session.save((err) => {
                 if (err) {
                     console.error('Gagal menyimpan sesi ke database:', err);
-                    return res.status(500).send('Gagal Login, silahkan coba lagi');
+                    res.status(500).send('Gagal Login, silahkan coba lagi');
+                    return;
                 }
                 return res.redirect('/kategori');
             });
