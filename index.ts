@@ -2,6 +2,7 @@ import express from 'express';
 import { Request, Response, NextFunction } from 'express';
 import session from 'express-session';
 import pgSession from 'connect-pg-simple';
+import pg from 'pg';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Config from './config/index.js';
@@ -20,9 +21,16 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+const pgPool = new pg.Pool({
+    connectionString: Config.URL,
+    max: 2,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
+});
+
 app.use(session({
     store: new PostgresSessionStore({
-        conString: Config.URL,
+        pool: pgPool,
         tableName: 'session',
         createTableIfMissing: false
     }),
