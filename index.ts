@@ -1,6 +1,7 @@
 import express from 'express';
 import { Request, Response, NextFunction } from 'express';
 import session from 'express-session';
+import pgSession from 'connect-pg-simple';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Config from './config/index.js';
@@ -11,6 +12,7 @@ import akunRoutes from './src/routes/akunRoutes.js';
 import historiRoutes from './src/routes/historiRoutes.js';
 
 const app = express();
+const PostgresSessionStore = pgSession(session);
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
