@@ -58,7 +58,7 @@ export const simpanTransaksi = async (req: Request, res: Response, next: NextFun
             jenis: isPengeluaran ? 'Pengeluaran' : 'Pemasukan',
             id_kategori: input_kategori,
             sub_kategori: subKategori.charAt(0).toUpperCase() + subKategori.slice(1),
-            total_perubahan: totalPerubahan
+            perubahan: totalPerubahan
         });
     } catch (error){
         next(error);
