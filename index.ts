@@ -15,6 +15,7 @@ import historiRoutes from './src/routes/historiRoutes.js';
 const app = express();
 const PostgresSessionStore = pgSession(session);
 
+app.set('trust proxy', 1);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
