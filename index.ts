@@ -31,6 +31,10 @@ const pgPool = new pg.Pool({
     }
 });
 
+pgPool.on('error', (err) => {
+    console.error('Unexpected error on idle database client', err);
+});
+
 app.use(session({
     store: new PostgresSessionStore({
         pool: pgPool,
