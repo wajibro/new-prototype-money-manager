@@ -25,7 +25,10 @@ const pgPool = new pg.Pool({
     connectionString: Config.SESSION_URL,
     max: 2, 
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000
+    connectionTimeoutMillis: 5000,
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
 pgPool.on('error', (err) => {
