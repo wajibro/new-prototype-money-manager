@@ -22,7 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 const pgPool = new pg.Pool({
-    connectionString: Config.URL,
+    connectionString: Config.SESSION_URL,
     max: 2, 
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000

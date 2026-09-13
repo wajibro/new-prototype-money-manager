@@ -9,6 +9,7 @@ interface AppConfig{
     SESSION_SECRET: string;
     URL: string;
     KEY: string;
+    SESSION_URL: string;
     CORRECT_PIN: string;
     IS_PRODUCTION: boolean;
 }
@@ -18,6 +19,7 @@ const Config: AppConfig = {
     SESSION_SECRET: process.env.SESSION_SECRET || '',
     URL: (process.env.DB_URL as string),
     KEY: (process.env.DB_KEY as string),
+    SESSION_URL: (process.env.SESSION_URL as string),
     CORRECT_PIN: process.env.CORRECT_PIN || '123',
     IS_PRODUCTION: process.env.NODE_ENV == 'production'
 };
