@@ -107,9 +107,9 @@
                         <% akunTabungan.forEach(function(akun) { %>
                             <option value="<%= akun.id_akun %>"><%= akun.nama_akun %></option>
                         <% }); %>
+                    </select>
                 </div>
             </div>
-
 
             <div class="flex flex-col">
                 <label class="text-xs font-bold text-slate-900 mb-1.5">Nominal (Rp)</label>
@@ -123,8 +123,6 @@
                 
                 <input type="hidden" name="input_total_perubahan" id="clean_nominal">
             </div>
-
-
 
             <div class="flex justify-center pt-4">
                 <button type="submit" class="w-full sm:w-44 bg-[#387df6] hover:bg-blue-600 text-white font-bold text-sm py-2.5 px-6 rounded-xl shadow-md transition-all tracking-wider uppercase">
