@@ -64,7 +64,7 @@ export const tambahAkun = async (req: Request, res: Response, next: NextFunction
         }
 
         if (input_nama_akun && input_total) {
-            await insertTable('akun_tabungan', { nama_akun: namaAkun, total_akun: total });
+            await insertTable('akun_tabungan', { nama_akun: namaAkun, total_akun: total, total_awal: total });
         }
         res.redirect('/akun_tabungan');
     }catch(error){
