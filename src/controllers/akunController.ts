@@ -126,7 +126,7 @@ export const prosesTransfer = async (req: Request, res: Response, next: NextFunc
             total_perubahan: totalTransfer
         });
 
-        res.redirect('/akun');
+        res.redirect('/akun_tabungan');
         return;
     }catch(error){
         next(error);
@@ -141,7 +141,7 @@ export const hapusAkun = async (req: Request, res: Response, next: NextFunction)
         await deleteTable('data_historis', 'id_akun_src', id);
         await deleteTable('akun_tabungan', 'id_akun', id);
 
-        res.redirect('/akun');
+        res.redirect('/akun_tabungan');
         return;
     } catch (error) {
         next(error);
