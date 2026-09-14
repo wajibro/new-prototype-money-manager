@@ -16,7 +16,11 @@ import historiRoutes from './src/routes/historiRoutes.js';
 const app = express();
 const PostgresSessionStore = pgSession(session);
 
-inject()
+// Configure Vercel Web Analytics with environment-specific settings
+inject({
+    mode: Config.IS_PRODUCTION ? 'production' : 'development',
+    debug: !Config.IS_PRODUCTION, // Enable debug logging in development
+})
 
 app.set('trust proxy', 1);
 app.set('view engine', 'ejs');
