@@ -1,4 +1,4 @@
-import { inject } from "@vercel/analytics"
+import { inject } from "@vercel/analytics";
 import express from 'express';
 import { Request, Response, NextFunction } from 'express';
 import session from 'express-session';
@@ -16,7 +16,7 @@ import historiRoutes from './src/routes/historiRoutes.js';
 const app = express();
 const PostgresSessionStore = pgSession(session);
 
-inject()
+inject({ mode: Config.IS_PRODUCTION ? 'production' : 'development', debug: !Config.IS_PRODUCTION });
 
 app.set('trust proxy', 1);
 app.set('view engine', 'ejs');
