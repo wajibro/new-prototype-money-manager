@@ -5,7 +5,9 @@ interface QueryOptions {
     eqCol?: string;
     eqRow?: any;
     order1?: string;
+    order1State?: boolean;
     order2?: string;
+    order2State?: boolean;
 }
 
 export const selectTable = async (table: string, options: QueryOptions = {}):Promise<any[]> =>{
@@ -15,10 +17,10 @@ export const selectTable = async (table: string, options: QueryOptions = {}):Pro
         query = query.eq(options.eqCol, options.eqRow);
     }
     if(options.order1){
-        query = query.order(options.order1, {ascending: true});
+        query = query.order(options.order1, {ascending: options.order1State || true});
     }
     if(options.order2){
-        query = query.order(options.order2, {ascending: true});
+        query = query.order(options.order2, {ascending: options.order2State || true});
     }
 
     const { data, error } = await query;

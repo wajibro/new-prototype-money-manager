@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import supabase from '../../config/supabase.js'; 
 import { selectTable, updateTable, deleteTable } from '../services/supabaseService.js';
+import { findPackageJSON } from 'module';
 
 const formatRupiah = (num: number): string => {
     return `Rp ${num.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -36,21 +37,20 @@ export const showHistoriPage = async (req: Request, res: Response, next: NextFun
             if (query && query.length > 0) editHistori = query[0];
         }
 
-        const { data: rawData, error: dbError } = await supabase
-            .from('data_historis')
-            .select(`
-                id_histori,
-                tanggal,
-                jenis,
-                sub_kategori,
-                perubahan,
-                id_akun_src,
-                id_kategori,
-                akun_tabungan!id_akun_src ( nama_akun ),
-                kategori!id_kategori ( nama_kategori )
-            `);
+        const rawData = await 
+        selectTable('data_historis', { select:`
+            id_histori,
+            tanggal,
+            jenis,
+            sub_kategori,
+            perubahan,
+            id_akun_src,
+            id_kategori,
+            akun_tabungan!id_akun_src ( nama_akun ),
+            kategori!id_kategori ( nama_kategori )
+        `, order1: 'id_histori', order1State:true });
 
-        if (dbError) throw new Error(`Gagal memuat relasi histori: ${dbError.message}`);
+        if (!rawData || rawData.length === 0) throw new Error(`Gagal memuat relasi histori`);
         const allData = rawData || [];
 
         const urutanTanggal = Array.from(new Set(allData.map(p => p.tanggal))).sort((a, b) => b.localeCompare(a));
@@ -77,7 +77,7 @@ export const showHistoriPage = async (req: Request, res: Response, next: NextFun
                     sub_kategori: p.sub_kategori,
                     perubahan: p.perubahan,
                     nama_akun: resAkun?.nama_akun || 'Akun Terhapus',
-                    nama_kategori: resKategori?.nama_kategori || 'Tanpa Kategori'
+                    nama_kategori: resKategori?.nama_kategori || ''
                 };
             });
 

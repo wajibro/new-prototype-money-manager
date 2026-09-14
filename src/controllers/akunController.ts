@@ -28,7 +28,7 @@ export const showAkunPage = async (req: Request, res: Response, next: NextFuncti
         const pemasukanQuery = await selectTable('view_recap_bulanan', { eqCol: 'bulan', eqRow: bulanIni});
         const totalPemasukan = formatRupiah(parseFloat(pemasukanQuery[0]?.total_pemasukan));
 
-        const akunTabungan = await selectTable('akun_tabungan', { order1: 'id_akun' });
+        const akunTabungan = await selectTable('akun_tabungan', { order1: 'id_akun'});
 
         let editAkun = null;
         if (editAkunId){
