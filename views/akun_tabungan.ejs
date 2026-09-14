@@ -47,7 +47,7 @@
 <br>
 <% if (editAkun) { %>
     <h3>Edit akun <%= editAkun.nama_akun %></h3>
-    <form action="/akun/update/<%= editAkun.id_akun %>" method="POST">
+    <form action="/akun_tabungan/update/<%= editAkun.id_akun %>" method="POST">
         <table border="1" cellpadding="5" cellspacing="0">
             <tbody>
                 <tr>
@@ -74,7 +74,7 @@
     </form>
 <% } else if (transferAkun) { %>
     <h3>Transfer Akun</h3>
-    <form action="/akun/transfer/<%= transferAkun.id_akun %>" method="POST">
+    <form action="/akun_tabungan/transfer/<%= transferAkun.id_akun %>" method="POST">
         <table border="1" cellpadding="5" cellspacing="0">
             <tr>
                 <td>Dari akun:</td>
@@ -144,7 +144,7 @@
 </table>
 
 <% if (tab === 'tambah_akun') { %>
-<form action="/akun/tambah" method="POST">
+<form action="/akun_tabungan/tambah" method="POST">
     <table border="1" cellpadding="5" cellspacing="0">
         <tbody>
             <tr>
