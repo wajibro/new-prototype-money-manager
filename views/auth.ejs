@@ -4,22 +4,82 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Selamat Datang di Prototype Ditemoney</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h3>Selamat Datang di Prototype Ditemoney</h3>
-    <h4>Silahkan masukkan pin terlebih dahulu</h4>
+<body class="bg-gradient-to-br from-[#4fa9f9] via-[#85c4ff] to-white min-h-screen flex items-center justify-center p-4">
 
-    <% if (tab === 'bisa') { %>
-        <form action="/auth/login" method="POST">
-            <input type="number" name="input_pin" placeholder="Masukkan PIN" required>
-            <button type="submit">Login</button>
-        </form>
-    <% } %> 
+    <div class="w-full max-w-md flex flex-col justify-between min-h-[85vh] py-12 px-6">
+        
+        <div class="mt-8">
+            <h3 class="text-2xl font-bold text-gray-900 leading-tight mb-6">
+                Selamat Datang kembali di<br>Prototype Ditemoney
+            </h3>
+            <p class="text-sm text-gray-600 font-medium">
+                Masukkan pin anda terlebih dahulu
+            </p>
+        </div>
 
-    <% if (tab === 'gagal') { %>
-        <p style="color: red;">PIN yang anda masukkan salah, coba lagi</p>
-        <a href="/auth?tab=bisa">Kembali</a>
-    <% } %>
-    <script defer src="/_vercel/insights/script.js"></script>
+        <div class="bg-white/60 backdrop-blur-md rounded-2xl p-6 shadow-sm border border-white/20 my-auto">
+            <form action="/auth/login" method="POST" id="pinForm" class="flex flex-col items-center">
+                <span class="text-xs font-semibold text-gray-500 self-start mb-4 tracking-wide">PIN :</span>
+                
+                <div class="flex justify-between w-full gap-2 mb-8">
+                    <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric" class="pin-box w-12 h-12 text-center text-xl font-bold text-gray-800 bg-white/70 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" required>
+                    <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric" class="pin-box w-12 h-12 text-center text-xl font-bold text-gray-800 bg-white/70 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" required>
+                    <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric" class="pin-box w-12 h-12 text-center text-xl font-bold text-gray-800 bg-white/70 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" required>
+                    <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric" class="pin-box w-12 h-12 text-center text-xl font-bold text-gray-800 bg-white/70 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" required>
+                    <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric" class="pin-box w-12 h-12 text-center text-xl font-bold text-gray-800 bg-white/70 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" required>
+                    <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric" class="pin-box w-12 h-12 text-center text-xl font-bold text-gray-800 bg-white/70 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" required>
+                </div>
+                
+                <input type="hidden" name="input_pin" id="hiddenPin">
+
+                <button type="submit" 
+                    class="w-36 bg-[#3b82f6] hover:bg-blue-600 text-white font-semibold py-2.5 px-6 rounded-xl shadow-sm transition-colors duration-200 tracking-wide text-sm">
+                    LOGIN
+                </button>
+            </form>
+        </div>
+
+        <div class="h-12"></div>
+    </div>
+
+    <script>
+        const inputs = document.querySelectorAll('.pin-box');
+        const hiddenPin = document.getElementById('hiddenPin');
+        const form = document.getElementById('pinForm');
+
+        inputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                if (input.value.length === 1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+                updateHiddenInput();
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && input.value.length === 0 && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+        });
+
+        function updateHiddenInput() {
+            let pinValue = "";
+            inputs.forEach(input => {
+                pinValue += input.value;
+            });
+            hiddenPin.value = pinValue;
+        }
+
+        form.addEventListener('submit', (e) => {
+            updateHiddenInput();
+            if (hiddenPin.value.length < 6) {
+                e.preventDefault();
+                alert("Silakan lengkapi 6 digit PIN Anda.");
+            }
+        });
+    </script>
 </body>
 </html>
