@@ -60,6 +60,8 @@ export const simpanTransaksi = async (req: Request, res: Response, next: NextFun
             sub_kategori: subKategori.charAt(0).toUpperCase() + subKategori.slice(1),
             perubahan: totalPerubahan
         });
+        
+        res.redirect(`/kategori?tab=${type}`);
     } catch (error){
         next(error);
     }
