@@ -1,173 +1,129 @@
-<div class="header">
-    <h2>Ditemoney - Money Manager</h2>
-    <button style="background-color: red;">
-        <a href="/auth/logout" class="logout-btn" style="text-decoration: none; color: black;">Logout</a>
-    </button>
-</div>
-<br>
-
-<!-- Ringkasan Keuangan (Data dari Supabase) -->
-<table border="1" cellpading="5" cellspacing="0">
-    <body>
-        <tr>
-            <td colspan="2">
-                Total Saldo: <%= totalSaldo %>
-            </td>
-        </tr>
-        <tr>
-            <td>Total Pengluaran</td>
-            <td>Total Pemasukan</td>
-        </tr>
-        <tr>
-            <td>
-                <p style="color: red;"><%= totalPengeluaran %></p>
-            </td>
-            <td>
-                <p style="color: green;"><%= totalPemasukan %></p>
-            </td>
-        </tr>
-    </body>
-</table>
-<br>
-<% if (message) { %>
-    <div class="alert"><%= message %></div>
-<% } %>
-
-<div>
-    <button>
-        <a href="/akun_tabungan">Akun Tabungan</a>
-    </button>
-    <button>
-        <a href="/kategori?tab=pengeluaran">Kategori</a>
-    </button>
-    <button>
-        <a href="/histori">Histori</a>
-    </button>
-</div>
-<br>
-<% if (editAkun) { %>
-    <h3>Edit akun <%= editAkun.nama_akun %></h3>
-    <form action="/akun_tabungan/update/<%= editAkun.id_akun %>" method="POST">
-        <table border="1" cellpadding="5" cellspacing="0">
-            <tbody>
+<%- include('partials/mainHeader') %>
+<div class="container">
+    <% if (editAkun) { %>
+        <h3>Edit akun <%= editAkun.nama_akun %></h3>
+        <form action="/akun_tabungan/update/<%= editAkun.id_akun %>" method="POST">
+            <table border="1" cellpadding="5" cellspacing="0">
+                <tbody>
+                    <tr>
+                        <td>Nama Akun:</td>
+                        <td>
+                            <input type="text" name="input_nama_akun_baru" value="<%= editAkun.nama_akun %>" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Total:</td>
+                        <td>
+                            <input type="number" name="input_total_akun_baru" value="<%= editAkun.total_akun %>" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <a href="/akun_tabungan">Batal</a>
+                            <button type="submit">Edit</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><%= message %></p>
+        </form>
+    <% } else if (transferAkun) { %>
+        <h3>Transfer Akun</h3>
+        <form action="/akun_tabungan/transfer/<%= transferAkun.id_akun %>" method="POST">
+            <table border="1" cellpadding="5" cellspacing="0">
                 <tr>
-                    <td>Nama Akun:</td>
+                    <td>Dari akun:</td>
+                    <td><%= transferAkun.nama_akun %></td>
+                </tr>
+                <tr>
+                    <td>Kirim ke:</td>
                     <td>
-                        <input type="text" name="input_nama_akun_baru" value="<%= editAkun.nama_akun %>" required>
+                        <select name="target_transfer" required>
+                            <option value="">Pilih Tujuan Transfer</option>
+                            <% akunTabungan.forEach(function(p) { %>
+                                <% if (p.id_akun !== transferAkun.id_akun) { %>
+                                    <option value="<%= p.id_akun %>"><%= p.nama_akun %></option>
+                                <% } %>
+                            <% }); %>
+                        </select>
                     </td>
                 </tr>
                 <tr>
-                    <td>Total:</td>
-                    <td>
-                        <input type="number" name="input_total_akun_baru" value="<%= editAkun.total_akun %>" required>
+                    <td>Sejumlah:</td>
+                    <td>Rp
+                        <input type="number" name="input_total_transfer" min="1" step="1" required>
                     </td>
                 </tr>
                 <tr>
                     <td colspan="2">
                         <a href="/akun_tabungan">Batal</a>
-                        <button type="submit">Edit</button>
+                        <button type="submit">Transfer</button>
+                    </td>
+                </tr>
+            </table>
+            <br>
+        </form>
+    <% } %>
+
+    <br>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Nama Akun</th>
+                <th>Total</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% akunTabungan.forEach(function(p) { %>
+                <tr>
+                    <td><%= p.nama_akun %></td>
+                    <td>
+                        Rp <%= p.total_akun.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %>
+                    </td>
+                    <td>
+                        <a href="/akun_tabungan?transfer_akun_id=<%= p.id_akun %>">Transfer</a>
+                        <a href="/akun_tabungan?edit_akun_id=<%= p.id_akun %>">Edit</a>
+                        <form action="/akun_tabungan/hapus/<%= p.id_akun %>" method="POST" style="display:inline;" onsubmit="return confirm('Hapus data?')">
+                            <button type="submit">Hapus</button>
+                        </form>
+                    </td>
+                </tr>
+            <% }); %>
+            <tr>
+                <td colspan="3">
+                    <a href="/akun_tabungan?tab=tambah_akun">Tambah akun tabungan</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <% if (tab === 'tambah_akun') { %>
+    <form action="/akun_tabungan/tambah" method="POST">
+        <table border="1" cellpadding="5" cellspacing="0">
+            <tbody>
+                <tr>
+                    <td>Nama Akun:</td>
+                    <td>
+                        <input type="text" name="input_nama_akun" required>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Jumlah Awal:</td>
+                    <td>Rp
+                        <input type="number" name="input_total" required>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button type="button"><a href="/akun_tabungan">Batal</a></button>
+                        <button type="submit">Tambah Akun</button>
                     </td>
                 </tr>
             </tbody>
         </table>
         <p><%= message %></p>
     </form>
-<% } else if (transferAkun) { %>
-    <h3>Transfer Akun</h3>
-    <form action="/akun_tabungan/transfer/<%= transferAkun.id_akun %>" method="POST">
-        <table border="1" cellpadding="5" cellspacing="0">
-            <tr>
-                <td>Dari akun:</td>
-                <td><%= transferAkun.nama_akun %></td>
-            </tr>
-            <tr>
-                <td>Kirim ke:</td>
-                <td>
-                    <select name="target_transfer" required>
-                        <option value="">Pilih Tujuan Transfer</option>
-                        <% akunTabungan.forEach(function(p) { %>
-                            <% if (p.id_akun !== transferAkun.id_akun) { %>
-                                <option value="<%= p.id_akun %>"><%= p.nama_akun %></option>
-                            <% } %>
-                        <% }); %>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>Sejumlah:</td>
-                <td>Rp
-                    <input type="number" name="input_total_transfer" min="1" step="1" required>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <a href="/akun_tabungan">Batal</a>
-                    <button type="submit">Transfer</button>
-                </td>
-            </tr>
-        </table>
-        <br>
-    </form>
-<% } %>
-
-<br>
-<table border="1" cellpadding="5" cellspacing="0">
-    <thead>
-        <tr>
-            <th>Nama Akun</th>
-            <th>Total</th>
-            <th>Aksi</th>
-        </tr>
-    </thead>
-    <tbody>
-        <% akunTabungan.forEach(function(p) { %>
-            <tr>
-                <td><%= p.nama_akun %></td>
-                <td>
-                    Rp <%= p.total_akun.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %>
-                </td>
-                <td>
-                    <a href="/akun_tabungan?transfer_akun_id=<%= p.id_akun %>">Transfer</a>
-                    <a href="/akun_tabungan?edit_akun_id=<%= p.id_akun %>">Edit</a>
-                    <form action="/akun_tabungan/hapus/<%= p.id_akun %>" method="POST" style="display:inline;" onsubmit="return confirm('Hapus data?')">
-                        <button type="submit">Hapus</button>
-                    </form>
-                </td>
-            </tr>
-        <% }); %>
-        <tr>
-            <td colspan="3">
-                <a href="/akun?tab=tambah_akun">Tambah akun tabungan</a>
-            </td>
-        </tr>
-    </tbody>
-</table>
-
-<% if (tab === 'tambah_akun') { %>
-<form action="/akun_tabungan/tambah" method="POST">
-    <table border="1" cellpadding="5" cellspacing="0">
-        <tbody>
-            <tr>
-                <td>Nama Akun:</td>
-                <td>
-                    <input type="text" name="input_nama_akun" required>
-                </td>
-            </tr>
-            <tr>
-                <td>Jumlah Awal:</td>
-                <td>Rp
-                    <input type="number" name="input_total" required>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <button type="button"><a href="/akun_tabungan">Batal</a></button>
-                    <button type="submit">Tambah Akun</button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    <p><%= message %></p>
-</form>
-<% } %>
-<script defer src="/_vercel/insights/script.js"></script>
+    <% } %>
+</div>
+<%- include('partials/mainFooter') %>

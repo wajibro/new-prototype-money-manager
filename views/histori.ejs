@@ -1,49 +1,5 @@
+<%- include('partials/mainHeader') %>
 <div class="container">
-    <div class="header">
-        <h2>Ditemoney - Money Manager</h2>
-        <button style="background-color: red;">
-            <a href="/auth/logout" class="logout-btn" style="text-decoration: none; color: black;">Logout</a>
-        </button>
-    </div>
-    <br>
-
-    <!-- Ringkasan Keuangan (Data dari Supabase) -->
-    <table border="1" cellpading="5" cellspacing="0">
-        <body>
-            <tr>
-                <td colspan="2">
-                    Total Saldo: <%= totalSaldo %>
-                </td>
-            </tr>
-            <tr>
-                <td>Total Pengluaran</td>
-                <td>Total Pemasukan</td>
-            </tr>
-            <tr>
-                <td>
-                    <p style="color: red;"><%= totalPengeluaran %></p>
-                </td>
-                <td>
-                    <p style="color: green;"><%= totalPemasukan %></p>
-                </td>
-            </tr>
-        </body>
-    </table>
-    <br>
-
-    <div>
-        <button>
-            <a href="/akun_tabungan">Akun Tabungan</a>
-        </button>
-        <button>
-            <a href="/kategori?tab=pengeluaran">Kategori</a>
-        </button>
-        <button>
-            <a href="/histori">Histori</a>
-        </button>
-    </div>
-    <br>
-
     <!-- PANEL FORM EDIT HISTORI JIKA AKTIF -->
     <% if (editHistori) { %>
         <div style="background: #fff3cd; padding: 20px; border-radius: 6px; margin-bottom: 30px; border: 1px solid #ffe69c;">
@@ -164,4 +120,4 @@
         </tbody>
     </table>
 </div>
-<script defer src="/_vercel/insights/script.js"></script>
+<%- include('partials/mainFooter') %>

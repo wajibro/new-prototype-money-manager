@@ -1,53 +1,5 @@
+<%- include('partials/mainHeader') %>
 <div class="container">
-    <!-- Header Utama -->
-    <div class="header">
-        <h2>Ditemoney - Money Manager</h2>
-        <button style="background-color: red;">
-            <a href="/auth/logout" class="logout-btn" style="text-decoration: none; color: black;">Logout</a>
-        </button>
-    </div>
-    <br>
-
-    <!-- Alert Pesan jika ada info dari server -->
-    <% if (message) { %>
-        <div class="alert"><%= message %></div>
-    <% } %>
-
-    <!-- Ringkasan Keuangan (Data dari Supabase) -->
-    <table border="1" cellpading="5" cellspacing="0">
-        <body>
-            <tr>
-                <td colspan="2">
-                    Total Saldo: <%= totalSaldo %>
-                </td>
-            </tr>
-            <tr>
-                <td>Total Pengluaran</td>
-                <td>Total Pemasukan</td>
-            </tr>
-            <tr>
-                <td>
-                    <p style="color: red;"><%= totalPengeluaran %></p>
-                </td>
-                <td>
-                    <p style="color: green;"><%= totalPemasukan %></p>
-                </td>
-            </tr>
-        </body>
-    </table>
-    <br>
-    <div>
-        <button>
-            <a href="/akun_tabungan">Akun Tabungan</a>
-        </button>
-        <button>
-            <a href="/kategori?tab=pengeluaran">Kategori</a>
-        </button>
-        <button>
-            <a href="/histori">Histori</a>
-        </button>
-    </div>
-    <br>
 
     <!-- Sistem Navigasi Tab Konten (Menjaga tab tetap aktif setelah form di-submit) -->
     <div>
@@ -273,4 +225,4 @@
         </form>
     <% } %>
 </div>
-<script defer src="/_vercel/insights/script.js"></script>
+<%- include('partials/mainFooter') %>

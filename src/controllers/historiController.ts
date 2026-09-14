@@ -14,6 +14,8 @@ const formatTanggalIndo = (dateStr: string): string => {
 
 export const showHistoriPage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+        const message = (req.query.message as string) || '';
+
         const editHistoriId = req.query.edit_histori_id as string;
         const bulanIni = new Date().toISOString().slice(0, 7);
 
@@ -100,7 +102,8 @@ export const showHistoriPage = async (req: Request, res: Response, next: NextFun
             dataHistoris: dataHistorisRender,
             editHistori,
             akunTabungan: listAkun,
-            kategori: listKategori
+            kategori: listKategori,
+            message
         });
         return;
     } catch (error) {

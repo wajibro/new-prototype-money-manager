@@ -59,7 +59,7 @@ export const tambahAkun = async (req: Request, res: Response, next: NextFunction
         const namaAkun = String(input_nama_akun || '').trim().charAt(0).toUpperCase() + String(input_nama_akun || '').trim().slice(1);
         const total = parseFloat(input_total || 0);
 
-        const listAkunQuery = await selectTable('akun_tabunga', { eqCol: 'nama_akun', eqRow: namaAkun});
+        const listAkunQuery = await selectTable('akun_tabungan', { eqCol: 'nama_akun', eqRow: namaAkun});
         if (listAkunQuery && listAkunQuery.length > 0) {
             res.redirect('/akun?tab=tambah_akun&message=Akun yang sama sudah ada, silahkan buat yang baru');
             return;
@@ -123,7 +123,7 @@ export const prosesTransfer = async (req: Request, res: Response, next: NextFunc
             jenis: 'Transfer',
             id_kategori: null,
             sub_kategori: 'Transfer',
-            total_perubahan: totalTransfer
+            perubahan: totalTransfer
         });
 
         res.redirect('/akun_tabungan');
