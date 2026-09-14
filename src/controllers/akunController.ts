@@ -45,16 +45,18 @@ export const showAkunPage = async (req: Request, res: Response, next: NextFuncti
         res.render('akun_tabungan', {
             totalSaldo, totalPengeluaran, totalPemasukan, akunTabungan, tab, message, editAkun, transferAkun
         });
+        return;
 
     } catch (error){
         next(error);
+        return;
     }
 };
 
 export const tambahAkun = async (req: Request, res: Response, next: NextFunction):Promise<void> => {
     try{
         const { input_nama_akun, input_total } = req.body;
-        const namaAkun = String(input_nama_akun || '').trim().charAt(0).toUpperCase + String(input_nama_akun || '').trim().slice(1);
+        const namaAkun = String(input_nama_akun || '').trim().charAt(0).toUpperCase() + String(input_nama_akun || '').trim().slice(1);
         const total = parseFloat(input_total || 0);
 
         const listAkunQuery = await selectTable('akun_tabunga', { eqCol: 'nama_akun', eqRow: namaAkun});
@@ -67,8 +69,10 @@ export const tambahAkun = async (req: Request, res: Response, next: NextFunction
             await insertTable('akun_tabungan', { nama_akun: namaAkun, total_akun: total, total_awal: total });
         }
         res.redirect('/akun_tabungan');
+        return;
     }catch(error){
         next(error);
+        return;
     }
 };
 
@@ -91,8 +95,10 @@ export const updateAkun = async (req: Request, res: Response, next: NextFunction
         }, 'id_akun', id);
 
         res.redirect('/akun_tabungan');
+        return;
     } catch (error) {
         next(error);
+        return;
     }
 };
 
@@ -121,8 +127,10 @@ export const prosesTransfer = async (req: Request, res: Response, next: NextFunc
         });
 
         res.redirect('/akun');
+        return;
     }catch(error){
         next(error);
+        return;
     }
 };
 
@@ -134,7 +142,9 @@ export const hapusAkun = async (req: Request, res: Response, next: NextFunction)
         await deleteTable('akun_tabungan', 'id_akun', id);
 
         res.redirect('/akun');
+        return;
     } catch (error) {
         next(error);
+        return;
     }
 };

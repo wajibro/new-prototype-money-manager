@@ -102,8 +102,10 @@ export const showHistoriPage = async (req: Request, res: Response, next: NextFun
             akunTabungan: listAkun,
             kategori: listKategori
         });
+        return;
     } catch (error) {
         next(error);
+        return;
     }
 };
 
@@ -130,8 +132,10 @@ export const updateHistori = async (req: Request, res: Response, next: NextFunct
         }, 'id_histori', id);
 
         res.redirect('/histori');
+        return;
     } catch (error) {
         next(error);
+        return;
     }
 };
 
@@ -139,8 +143,11 @@ export const hapusHistori = async (req: Request, res: Response, next: NextFuncti
     try {
         const { id } = req.params;
         await deleteTable('data_historis', 'id_histori', id);
+
         res.redirect('/histori');
+        return;
     } catch (error) {
         next(error);
+        return;
     }
 };

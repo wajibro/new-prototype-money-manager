@@ -31,8 +31,10 @@ export const showKategoriPage = async (req: Request, res: Response, next: NextFu
         res.render('kategori', {
             totalSaldo, totalPemasukan, totalPengeluaran, kategori, akunTabungan, tabAktif, message
         });
+        return;
     } catch (error) {
         next(error);
+        return;
     }
 };
 
@@ -60,10 +62,12 @@ export const simpanTransaksi = async (req: Request, res: Response, next: NextFun
             sub_kategori: subKategori.charAt(0).toUpperCase() + subKategori.slice(1),
             perubahan: totalPerubahan
         });
-        
+
         res.redirect(`/kategori?tab=${type}`);
+        return;
     } catch (error){
         next(error);
+        return;
     }
 };
 
@@ -90,7 +94,9 @@ export const tambahKategori = async (req: Request, res: Response, next: NextFunc
         await insertTable('kategori', { kategori: kategoriBaru, jenis: jenisDb });
         
         res.redirect(`/kategori?tab=${type}`);
+        return;
     } catch (error){
         next(error);
+        return;
     }
 };

@@ -3,7 +3,7 @@ import Config from '../../config/index.js';
 
 export const showAuthPage = (req: Request, res: Response):void => {
     if(req.session.logged_in){
-        res.redirect('/kategori');
+        return res.redirect('/kategori');
     }
 
     const tab = (req.query.tab as string) || 'bisa';
@@ -36,6 +36,7 @@ export const login = (req: Request, res: Response): void => {
     } catch (error) {
         console.error('Galat fatal pada internal login:', error);
         res.status(500).send('Terjadi kesalahan internal server');
+        return;
     }
 };
 
@@ -43,5 +44,6 @@ export const logout = (req: Request, res: Response):void => {
     req.session.destroy((err) =>{
         if (err) return res.status(500).send('Gagal Logout');
         res.redirect('/auth');
+        return;
     });
 };
