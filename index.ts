@@ -1,3 +1,4 @@
+import { inject } from "@vercel/analytics"
 import express from 'express';
 import { Request, Response, NextFunction } from 'express';
 import session from 'express-session';
@@ -14,6 +15,8 @@ import historiRoutes from './src/routes/historiRoutes.js';
 
 const app = express();
 const PostgresSessionStore = pgSession(session);
+
+inject()
 
 app.set('trust proxy', 1);
 app.set('view engine', 'ejs');
