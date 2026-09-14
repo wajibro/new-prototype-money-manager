@@ -117,7 +117,7 @@ export const updateHistori = async (req: Request, res: Response, next: NextFunct
         const katQuery = await selectTable('kategori', { select: 'id_kategori', eqCol: 'nama_kategori', eqRow: input_kategori_baru });
 
         if (!akunQuery || akunQuery.length === 0 || !katQuery || katQuery.length === 0) {
-            res.redirect('/histori_data?message=Gagal memperbarui, relasi ID tidak valid');
+            res.redirect('/histori?message=Gagal memperbarui, relasi ID tidak valid');
             return;
         }
 
@@ -129,7 +129,7 @@ export const updateHistori = async (req: Request, res: Response, next: NextFunct
             tanggal: input_tanggal_baru
         }, 'id_histori', id);
 
-        res.redirect('/histori_data');
+        res.redirect('/histori');
     } catch (error) {
         next(error);
     }
@@ -139,7 +139,7 @@ export const hapusHistori = async (req: Request, res: Response, next: NextFuncti
     try {
         const { id } = req.params;
         await deleteTable('data_historis', 'id_histori', id);
-        res.redirect('/histori_data');
+        res.redirect('/histori');
     } catch (error) {
         next(error);
     }

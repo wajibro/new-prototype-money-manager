@@ -48,7 +48,7 @@
     <% if (editHistori) { %>
         <div style="background: #fff3cd; padding: 20px; border-radius: 6px; margin-bottom: 30px; border: 1px solid #ffe69c;">
             <h3>Edit Histori Data</h3>
-            <form action="/histori_data/update/<%= editHistori.id %>" method="POST">
+            <form action="/histori/update/<%= editHistori.id %>" method="POST">
                 <table>
                     <tbody>
                         <tr>
@@ -85,7 +85,7 @@
                         </tr>
                         <tr>
                             <td colspan="2">
-                                <a href="/histori_data" style="margin-right:15px; color:#dc3545; text-decoration:none; font-weight:bold;">Batal Edit</a>
+                                <a href="/histori" style="margin-right:15px; color:#dc3545; text-decoration:none; font-weight:bold;">Batal Edit</a>
                                 <button type="submit" style="background:#198754; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;">Simpan Perubahan</button>
                             </td>
                         </tr>
@@ -145,11 +145,11 @@
                                     <td>
                                         <% if (p.jenis === 'Pemasukan' || p.jenis === 'Pengeluaran') { %>
                                             <button>
-                                                <a href="/histori_data?edit_histori_id=<%= p.id %>" text-decoration:none; font-weight:bold; margin-right:10px;">Edit</a>
+                                                <a href="/histori?edit_histori_id=<%= p.id %>" text-decoration:none; font-weight:bold; margin-right:10px;">Edit</a>
                                             </button>
                                         <% } %>
                                         
-                                        <form action="/histori_data/hapus/<%= p.id %>" method="POST" style="display:inline;" onsubmit="return confirm('Hapus data histori ini secara permanen?')">
+                                        <form action="/histori/hapus/<%= p.id %>" method="POST" style="display:inline;" onsubmit="return confirm('Hapus data histori ini secara permanen?')">
                                             <button type="submit" color:#dc3545; cursor:pointer; font-weight:bold; padding:0;">Hapus</button>
                                         </form>
                                     </td>
