@@ -1,174 +1,147 @@
 <%- include('partials/mainHeader') %>
-<div class="container">
-
-    <!-- Sistem Navigasi Tab Konten (Menjaga tab tetap aktif setelah form di-submit) -->
-    <div>
-        <button>
-            <a href="/kategori?tab=pengeluaran" class="tab-link <%= tabAktif === 'pengeluaran' ? 'active' : '' %>">Catat Pengeluaran</a>
-        </button>
-        <button>
-            <a href="/kategori?tab=pemasukan" class="tab-link <%= tabAktif === 'pemasukan' ? 'active' : '' %>">Catat Pemasukan</a>
-        </button>
+<div class="bg-white/60 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-white/20 flex-1 flex flex-col justify-between">
+    <div class="grid grid-cols-2 gap-3">
+        <a href="/kategori?tab=pemasukan" class="flex items-center justify-center gap-1 bg-[#22c55e] hover:bg-green-600 text-white text-xs font-semibold py-2 px-3 rounded-xl transition-all shadow-sm">
+            <span class="text-sm">↓</span> Pemasukan
+        </a>
+        <a href="/kategori?tab=pengeluaran" class="flex items-center justify-center gap-1 bg-[#ef4444] hover:bg-red-600 text-white text-xs font-semibold py-2 px-3 rounded-xl transition-all shadow-sm">
+            <span class="text-sm">↑</span> Pengeluaran
+        </a>
     </div>
+    <% if(tabAktif == 'pengeluaran') { %>
+        <form action="/kategori/simpan/pengeluaran" method="POST" class="space-y-4">
+            <h3 class="text-base font-bold text-slate-900 tracking-wide mb-4">Catat <%= tabAktif %> baru</h3>
 
-    <!-- TAB 1: FORM PENGELUARAN -->
-    <% if (tabAktif === 'pengeluaran') { %>
-        <form action="/kategori/simpan/pengeluaran" method="POST">
-            <table border="1" cellpading="5" cellspacing="0">
-                <thead>
-                    <tr>
-                        <td colspan="2">
-                            <label>Data <%= tabAktif %> baru:</label>
-                        </td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>
-                            <label>Tanggal</label>
-                        </td>
-                        <td>
-                            <input type="date" name="input_tanggal" required value="<%= new Date().toISOString().slice(0, 10) %>">*
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label>Kategori: </label>
-                        </td>
-                        <td>
-                            <select name="input_kategori" required>
-                                <option value="">-- Pilih Kategori --</option>
-                                <% kategori.forEach(function(kat) { %>
-                                    <% if (kat.jenis === 'Pengeluaran') { %>
-                                        <option value="<%= kat.id_kategori %>"><%= kat.nama_kategori %></option>
-                                    <% } %>
-                                <% }); %>
-                            </select>*
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label>Sub Kategori: </label>
-                        </td>
-                        <td>
-                            <input type="text" name="input_sub_kategori" placeholder="Makan, Jajan, dll">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label>Akun Tabungan: </label>
-                        </td>
-                        <td>
-                            <select name="input_akun_tabungan" required>
-                                <option value="">-- Pilih Rekening Sumber --</option>
-                                <% akunTabungan.forEach(function(akun) { %>
-                                    <option value="<%= akun.id_akun %>"><%= akun.nama_akun %> (Saldo: Rp <%= akun.total_akun.toLocaleString('id-ID') %>)</option>
-                                <% }); %>
-                            </select>*
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label>Nominal: </label>
-                        </td>
-                        <td>
-                            Rp
-                            <input type="number" name="input_total_perubahan" placeholder="Masukkan nominal angka saja" required min="1">*
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            <button type="submit" style="background-color: red; color: white;">Simpan Transaksi Pengeluaran</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </form>
-        <button>
-            <a href="/kategori?tab=tambah_kategori_pengeluaran" class="tab-link <%= tabAktif === 'tambah_kategori_pengeluaran' ? 'active' : '' %>">+ Kategori Pengeluaran</a>
-        </button>
-    <% } %>
+            <div class="flex flex-col">
+                <label class="text-xs font-bold text-slate-900 mb-1.5">Tanggal</label>
+                <input type="date" name="input_tanggal" required value="2026-09-14"
+                    class="w-full bg-[#c2e2ff] border border-blue-200/50 rounded-xl px-4 py-2.5 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
 
-    <!-- TAB 2: FORM PEMASUKAN -->
-    <% if (tabAktif === 'pemasukan') { %>
-        <form action="/kategori/simpan/pemasukan" method="POST">
-            <table border="1" cellpading="5" cellspacing="0">
-                <thead>
-                    <tr>
-                        <td colspan="2">
-                            <label>Data <%= tabAktif %> baru:</label>
-                        </td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>
-                            <label>Tanggal: </label>
-                        </td>
-                        <td>
-                            <input type="date" name="input_tanggal" required value="<%= new Date().toISOString().slice(0, 10) %>">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label>Kategori: </label>
-                        </td>
-                        <td>
-                            <select name="input_kategori" required>
-                                <option value="">-- Pilih Kategori --</option>
-                                <% kategori.forEach(function(kat) { %>
-                                    <% if (kat.jenis === 'Pemasukan') { %>
-                                        <option value="<%= kat.id_kategori %>"><%= kat.nama_kategori %></option>
-                                    <% } %>
-                                <% }); %>
-                            </select>*
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label>Sub Kategori: </label>
-                        </td>
-                        <td>
-                            <input type="text" name="input_sub_kategori" placeholder="Shopee driver, Tip shopee, dll">*
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label>Akun Tabungan: </label>
-                        </td>
-                        <td>
-                            <select name="input_akun_tabungan" required>
-                                <option value="">-- Pilih Rekening Target --</option>
-                                <% akunTabungan.forEach(function(akun) { %>
-                                    <option value="<%= akun.id_akun %>"><%= akun.nama_akun %></option>
-                                <% }); %>
-                            </select>*
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label>Nominal: </label>
-                        </td>
-                        <td>Rp
-                            <input type="number" name="input_total_perubahan" placeholder="Masukkan nominal angka saja" required min="1">*
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            <button type="submit" style="background-color: #198754; color: white;">Simpan Transaksi Pemasukan</button>
-                        </td>
-                    </tr>
-                </tbody>
+            <div class="flex flex-col">
+                <label class="text-xs font-bold text-slate-900 mb-1.5">Kategori</label>
+                <div class="relative">
+                    <select name="input_kategori" required
+                        class="w-full bg-[#c2e2ff] border border-blue-200/50 rounded-xl pl-4 pr-10 py-2.5 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231e293b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[position:right_16px_center] bg-no-repeat">
+                        <option value="" class="text-gray-500 font-normal">-- Pilih Kategori --</option>
+                        <% kategori.forEach(function(kat) { %>
+                            <% if (kat.jenis === 'Pengeluaran') { %>
+                                <option value="<%= kat.id_kategori %>"><%= kat.nama_kategori %></option>
+                            <% } %>
+                        <% }); %>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-xs font-bold text-slate-900 mb-1.5">Akun Tabungan</label>
+                <div class="relative">
+                    <select name="input_akun_tabungan" required
+                        class="w-full bg-[#c2e2ff] border border-blue-200/50 rounded-xl pl-4 pr-10 py-2.5 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231e293b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[position:right_16px_center] bg-no-repeat">
+                        <option value="" class="text-gray-500 font-normal">-- Pilih Rekening Sumber --</option>
+                        <% akunTabungan.forEach(function(akun) { %>
+                            <option value="<%= akun.id_akun %>"><%= akun.nama_akun %> (Saldo: Rp <%= akun.total_akun.toLocaleString('id-ID') %>)</option>
+                        <% }); %>
+                    </select>
+                </div>
+            </div>
+
+
+            <div class="flex flex-col">
+                <label class="text-xs font-bold text-slate-900 mb-1.5">Nominal (Rp)</label>
+                <div class="relative flex items-center">
+                    <span class="absolute left-4 text-sm font-bold text-gray-900">Rp</span>
+                    
+                    <input type="text" id="currency_input" placeholder="0" required
+                        inputmode="numeric"
+                        class="w-full bg-[#c2e2ff] border border-blue-200/50 rounded-xl pl-11 pr-4 py-2.5 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-600/80">
+                </div>
                 
-            </table>
-        </form>
-        <button>
-            <a href="/kategori?tab=tambah_kategori_pemasukan" class="tab-link <%= tabAktif === 'tambah_kategori_pemasukan' ? 'active' : '' %>">+ Kategori Pemasukan</a>
-        </button>
-    <% } %>
+                <input type="hidden" name="input_total_perubahan" id="clean_nominal">
+            </div>
 
-    <!-- TAB 3: TAMBAH KATEGORI PENGELUARAN -->
-    <% if (tabAktif === 'tambah_kategori_pengeluaran') { %>
+            <div class="flex justify-center pt-4">
+                <button type="submit" class="w-full sm:w-44 bg-[#387df6] hover:bg-blue-600 text-white font-bold text-sm py-2.5 px-6 rounded-xl shadow-md transition-all tracking-wider uppercase">
+                    Simpan
+                </button>
+            </div>
+        </form>
+
+        <div class="flex justify-center mt-6">
+            <a href="/kategori?tab=tambah_kategori_pengeluaran" class="bg-[#6fa8e0] hover:bg-blue-500 text-white text-xs font-bold py-2.5 px-6 rounded-full transition-all shadow-sm">
+                + Tambah kategori baru
+            </a>
+        </div>
+    <% } %>
+    <% if (tabAktif === 'pemasukan') { %>
+        <form action="/kategori/simpan/pemasukan" method="POST" class="space-y-4">
+            <h3 class="text-base font-bold text-slate-900 tracking-wide mb-4">Catat <%= tabAktif %> baru</h3>
+
+            <div class="flex flex-col">
+                <label class="text-xs font-bold text-slate-900 mb-1.5">Tanggal</label>
+                <input type="date" name="input_tanggal" required value="2026-09-14"
+                    class="w-full bg-[#c2e2ff] border border-blue-200/50 rounded-xl px-4 py-2.5 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-xs font-bold text-slate-900 mb-1.5">Kategori</label>
+                <div class="relative">
+                    <select name="input_kategori" required
+                        class="w-full bg-[#c2e2ff] border border-blue-200/50 rounded-xl pl-4 pr-10 py-2.5 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231e293b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[position:right_16px_center] bg-no-repeat">
+                        <option value="" class="text-gray-500 font-normal">-- Pilih Kategori --</option>
+                        <% kategori.forEach(function(kat) { %>
+                            <% if (kat.jenis === 'Pemasukan') { %>
+                                <option value="<%= kat.id_kategori %>"><%= kat.nama_kategori %></option>
+                            <% } %>
+                        <% }); %>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-xs font-bold text-slate-900 mb-1.5">Akun Tabungan</label>
+                <div class="relative">
+                    <select name="input_akun_tabungan" required
+                        class="w-full bg-[#c2e2ff] border border-blue-200/50 rounded-xl pl-4 pr-10 py-2.5 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231e293b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[position:right_16px_center] bg-no-repeat">
+                        <option value="" class="text-gray-500 font-normal">-- Pilih Rekening Sumber --</option>
+                        <% akunTabungan.forEach(function(akun) { %>
+                            <option value="<%= akun.id_akun %>"><%= akun.nama_akun %></option>
+                        <% }); %>
+                </div>
+            </div>
+
+
+            <div class="flex flex-col">
+                <label class="text-xs font-bold text-slate-900 mb-1.5">Nominal (Rp)</label>
+                <div class="relative flex items-center">
+                    <span class="absolute left-4 text-sm font-bold text-gray-900">Rp</span>
+                    
+                    <input type="text" id="currency_input" placeholder="0" required
+                        inputmode="numeric"
+                        class="w-full bg-[#c2e2ff] border border-blue-200/50 rounded-xl pl-11 pr-4 py-2.5 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-600/80">
+                </div>
+                
+                <input type="hidden" name="input_total_perubahan" id="clean_nominal">
+            </div>
+
+
+
+            <div class="flex justify-center pt-4">
+                <button type="submit" class="w-full sm:w-44 bg-[#387df6] hover:bg-blue-600 text-white font-bold text-sm py-2.5 px-6 rounded-xl shadow-md transition-all tracking-wider uppercase">
+                    Simpan
+                </button>
+            </div>
+        </form>
+
+        <div class="flex justify-center mt-6">
+            <a href="/kategori?tab=tambah_kategori_pemasukan" class="bg-[#6fa8e0] hover:bg-blue-500 text-white text-xs font-bold py-2.5 px-6 rounded-full transition-all shadow-sm">
+                + Tambah kategori baru
+            </a>
+        </div>
+    <% } %>
+</div>
+
+<% if (tabAktif === 'tambah_kategori_pengeluaran') { %>
         <form action="/kategori/tambah-kategori/pengeluaran" method="POST">
             <table border="1" cellpadding="5" cellspacing="0">
                 <thead>
