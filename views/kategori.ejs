@@ -22,7 +22,7 @@
 
             <div class="flex flex-col">
                 <label class="text-xs font-bold text-slate-900 mb-1.5">Tanggal</label>
-                <input type="date" name="input_tanggal" required value="2026-09-14"
+                <input type="date" name="input_tanggal" id="input_tanggal" required
                     class="w-full bg-[#c2e2ff] border border-blue-200/50 rounded-xl px-4 py-2.5 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
@@ -101,13 +101,13 @@
             </a>
         </div>
         <br>
-        
+
         <form action="/kategori/simpan/pemasukan" method="POST" class="space-y-4">
             <h3 class="text-base font-bold text-slate-900 tracking-wide mb-4">Catat <%= tabAktif %> baru</h3>
 
             <div class="flex flex-col">
                 <label class="text-xs font-bold text-slate-900 mb-1.5">Tanggal</label>
-                <input type="date" name="input_tanggal" required value="2026-09-14"
+                <input type="date" name="input_tanggal" id="input_tanggal" required
                     class="w-full bg-[#c2e2ff] border border-blue-200/50 rounded-xl px-4 py-2.5 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
@@ -276,5 +276,15 @@
             }
         });
     });
+
+    const hariIni = new Date();
+
+    const tahun = hariIni.getFullYear();
+    const bulan = String(hariIni.getMonth() + 1).padStart(2, '0'); // Bulan dimulai dari 0
+    const tanggal = String(hariIni.getDate()).padStart(2, '0');
+
+    const tanggalLokal = `${tahun}-${bulan}-${tanggal}`;
+
+    document.getElementById('input_tanggal').value = tanggalLokal;
 </script>
 <%- include('partials/mainFooter') %>
