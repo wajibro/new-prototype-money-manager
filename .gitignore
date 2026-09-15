@@ -55,6 +55,3 @@ Thumbs.db
 
 # TypeScript build info cache
 tsconfig.tsbuildinfo
-
-# Opsional: Tailwind CSS build output lokal (baca catatan di bawah)
-public/css/output.css

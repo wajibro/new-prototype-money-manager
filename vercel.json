@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "cleanUrls": true,
   "builds": [
     {
       "src": "index.ts",
@@ -8,8 +9,8 @@
   ],
   "routes": [
     {
-      "src": "/css/(.*)",
-      "dest": "/public/css/$1"
+      "src": "/css/output.css",
+      "dest": "/public/css/output.css"
     },
     {
       "src": "/(.*)",
