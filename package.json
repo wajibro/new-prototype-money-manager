@@ -10,7 +10,8 @@
     "dev": "npx concurrently \"npm run tailwind:watch\" \"npm run server:watch\"",
     "build:css": "npx @tailwindcss/cli -i ./src/input.css -o ./public/css/output.css --minify",
     "build:ts": "tsc",
-    "build": "npm run build:css && npm run build:ts"
+    "build": "npm run build:css && npm run build:ts",
+    "vercel-build": "npm run build:css && npm run build:ts"
   },
   "keywords": [],
   "author": "",
