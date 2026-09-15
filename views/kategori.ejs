@@ -5,15 +5,18 @@
     <a href="/histori" class="bg-white/60 hover:bg-white text-center text-xs font-medium text-gray-800 py-2.5 px-1 rounded-xl shadow-xs border border-white/30 transition-all">Histori</a>
 </div>
 <div class="bg-white/60 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-white/20 flex-1 flex flex-col justify-between">
-    <div class="grid grid-cols-2 gap-3">
-        <a href="/kategori?tab=pemasukan" class="flex items-center justify-center gap-1 bg-[#22c55e] hover:bg-green-600 text-white text-xs font-semibold py-2 px-3 rounded-xl transition-all shadow-sm">
-            <span class="text-sm">↓</span> Pemasukan
-        </a>
-        <a href="/kategori?tab=pengeluaran" class="flex items-center justify-center gap-1 bg-[#ef4444] hover:bg-red-600 text-white text-xs font-semibold py-2 px-3 rounded-xl transition-all shadow-sm">
-            <span class="text-sm">↑</span> Pengeluaran
-        </a>
-    </div>
     <% if(tabAktif == 'pengeluaran') { %>
+        <div class="grid grid-cols-2 gap-3">
+            <a href="/kategori?tab=pemasukan" class="flex items-center justify-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold py-2 px-3 rounded-xl transition-all shadow-sm">
+                <span class="text-sm">↓</span> Pemasukan
+            </a>
+            
+            <a href="/kategori?tab=pengeluaran" class="flex items-center justify-center gap-1 bg-[#d33232] text-white text-xs font-semibold py-2 px-3 rounded-xl shadow-inner pointer-events-none opacity-90">
+                <span class="text-sm">↑</span> Pengeluaran
+            </a>
+        </div>
+        <br>
+
         <form action="/kategori/simpan/pengeluaran" method="POST" class="space-y-4">
             <h3 class="text-base font-bold text-slate-900 tracking-wide mb-4">Catat <%= tabAktif %> baru</h3>
 
@@ -88,6 +91,17 @@
         </div>
     <% } %>
     <% if (tabAktif === 'pemasukan') { %>
+        <div class="grid grid-cols-2 gap-3">
+            <a href="/kategori?tab=pemasukan" class="flex items-center justify-center gap-1 bg-[#1c9c4b] text-white text-xs font-semibold py-2 px-3 rounded-xl shadow-inner pointer-events-none opacity-90">
+                <span class="text-sm">↓</span> Pemasukan
+            </a>
+            
+            <a href="/kategori?tab=pengeluaran" class="flex items-center justify-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold py-2 px-3 rounded-xl transition-all shadow-sm">
+                <span class="text-sm">↑</span> Pengeluaran
+            </a>
+        </div>
+        <br>
+        
         <form action="/kategori/simpan/pemasukan" method="POST" class="space-y-4">
             <h3 class="text-base font-bold text-slate-900 tracking-wide mb-4">Catat <%= tabAktif %> baru</h3>
 
@@ -220,4 +234,47 @@
         </form>
     <% } %>
 </div>
+<script>
+    document.querySelectorAll('#currency_input').forEach(input => {
+        input.addEventListener('input', function(e) {
+            let nilaiBersih = this.value.replace(/\D/g, '');
+            
+            if (nilaiBersih) {
+                this.value = new Intl.NumberFormat('id-ID').format(nilaiBersih);
+            } else {
+                this.value = '';
+            }
+        });
+    });
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const subKategoriInput = this.querySelector('#sub_kategori_input');
+            const cleanSubKategori = this.querySelector('#clean_sub_kategori');
+            
+            if (subKategoriInput && cleanSubKategori) {
+                cleanSubKategori.value = subKategoriInput.value.trim();
+            }
+
+            const currencyInput = this.querySelector('#currency_input');
+            const cleanNominal = this.querySelector('#clean_nominal');
+            
+            if (currencyInput && cleanNominal) {
+                const angkaSaja = currencyInput.value.replace(/[^0-9]/g, '');
+                cleanNominal.value = angkaSaja;
+            }
+        });
+    });
+
+    document.querySelectorAll('#currency_input').forEach(input => {
+        input.addEventListener('input', function(e) {
+            let value = this.value.replace(/[^0-9]/g, '');
+            
+            if (value) {
+                this.value = Number(value).toLocaleString('id-ID');
+            } else {
+                this.value = '';
+            }
+        });
+    });
+</script>
 <%- include('partials/mainFooter') %>

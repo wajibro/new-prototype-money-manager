@@ -49,3 +49,12 @@ build/
 # OS Files
 .DS_Store
 Thumbs.db
+
+# Vercel deployment folder (Wajib tambahkan ini)
+.vercel/
+
+# TypeScript build info cache
+tsconfig.tsbuildinfo
+
+# Opsional: Tailwind CSS build output lokal (baca catatan di bawah)
+public/css/output.css

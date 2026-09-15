@@ -5,8 +5,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch index.ts",
-    "build": "tsc"
+    "tailwind:watch": "npx @tailwindcss/cli -i ./src/input.css -o ./public/css/output.css --watch",
+    "server:watch": "tsx watch index.ts",
+    "dev": "npx concurrently \"npm run tailwind:watch\" \"npm run server:watch\"",
+    "build:css": "npx @tailwindcss/cli -i ./src/input.css -o ./public/css/output.css --minify",
+    "build:ts": "tsc",
+    "build": "npm run build:css && npm run build:ts"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +27,7 @@
     "pg": "^8.23.0"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
     "@types/express": "^5.0.6",
     "@types/express-session": "^1.19.0",
     "@types/node": "^22.20.2",
