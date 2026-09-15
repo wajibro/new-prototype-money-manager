@@ -1,21 +1,18 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
-    // File Layout
-    // "rootDir": "./src",
-    // "outDir": "./dist",
-
     // Environment Settings
-    // See also https://aka.ms/tsconfig/module
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
     "target": "ES2022",
     "lib": ["ES2022"],
-
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "moduleDetection": "force",
+    
+    // File Layout & Build Output
     "outDir": "./dist",
     "rootDir": "./",
+    "allowJs": true,
 
-    // Other Outputs
+    // Other Outputs (Sourcemaps & Definitions)
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
@@ -25,33 +22,22 @@
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "noUncheckedSideEffectImports": true,
-
-    "esModuleInterop": true,
-    "verbatimModuleSyntax": false,
-    "isolatedModules": true,
-    "moduleDetection": "force",
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
 
-    // For nodejs:
-    // "lib": ["esnext"],
-    // "types": ["node"],
-    // and npm install -D @types/node
-
-    // Style Options
-    // "noImplicitReturns": true,
-    // "noImplicitOverride": true,
-    // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
-    // "noFallthroughCasesInSwitch": true,
-    // "noPropertyAccessFromIndexSignature": true,
-
-    // Recommended Options
-    "jsx": "react-jsx",
+    // Interop Constraints
+    "esModuleInterop": true,
+    "verbatimModuleSyntax": false,
+    "isolatedModules": true
   },
-  "include": ["index.ts", "src/**/*"],
-  "ts-node":{
-    "esm": true,
-    "experimentalSpecifierResolution": "node"
-  }
+  "include": [
+    "index.ts", 
+    "src/**/*", 
+    "config/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "public/**/*",
+    "dist/**/*"
+  ]
 }
