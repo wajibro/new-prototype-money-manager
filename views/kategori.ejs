@@ -39,6 +39,16 @@
             </div>
 
             <div class="flex flex-col">
+                <label class="text-xs font-bold text-slate-900 mb-1.5">Sub Kategori</label>
+                <div class="relative flex items-center">
+                    <input type="text" id="sub_kategori_input" placeholder="Makan, Jajan, dll" required
+                        class="w-full bg-[#c2e2ff] border border-blue-200/50 rounded-xl pl-4 pr-4 py-2.5 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-600/80">
+                </div>
+                
+                <input type="hidden" name="input_sub_kategori" id="clean_sub_kategori">
+            </div>
+
+            <div class="flex flex-col">
                 <label class="text-xs font-bold text-slate-900 mb-1.5">Akun Tabungan</label>
                 <div class="relative">
                     <select name="input_akun_tabungan" required
@@ -58,7 +68,6 @@
                     <span class="absolute left-4 text-sm font-bold text-gray-900">Rp</span>
                     
                     <input type="text" id="currency_input" placeholder="0" required
-                        inputmode="numeric"
                         class="w-full bg-[#c2e2ff] border border-blue-200/50 rounded-xl pl-11 pr-4 py-2.5 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-600/80">
                 </div>
                 
@@ -101,6 +110,16 @@
                         <% }); %>
                     </select>
                 </div>
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-xs font-bold text-slate-900 mb-1.5">Sub Kategori</label>
+                <div class="relative flex items-center">
+                    <input type="text" id="sub_kategori_input" placeholder="Makan, Jajan, dll" required
+                        class="w-full bg-[#c2e2ff] border border-blue-200/50 rounded-xl pl-4 pr-4 py-2.5 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-600/80">
+                </div>
+                
+                <input type="hidden" name="input_sub_kategori" id="clean_sub_kategori">
             </div>
 
             <div class="flex flex-col">
