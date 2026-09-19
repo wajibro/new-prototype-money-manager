@@ -26,7 +26,7 @@ export const showKategoriPage = async (req: Request, res: Response, next: NextFu
         const totalPemasukan = formatRupiah(parseFloat(pemasukanQuery[0]?.total_pemasukan));
 
         const kategori = await selectTable('kategori', { order1: 'id_kategori' });
-        const akunTabungan = await selectTable('akun_tabungan');
+        const akunTabungan = await selectTable('akun_tabungan', { order1: 'id_akun' });
 
         res.render('kategori', {
             totalSaldo, totalPemasukan, totalPengeluaran, kategori, akunTabungan, tabAktif, message
