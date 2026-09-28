@@ -6,7 +6,6 @@ import session from 'express-session';
 import pgSession from 'connect-pg-simple';
 import pg from 'pg';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import Config from './config/index.js';
 
 import authRoutes from './src/routes/authRoutes.js';

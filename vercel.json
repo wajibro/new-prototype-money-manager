@@ -9,10 +9,6 @@
   ],
   "routes": [
     {
-      "src": "/css/output.css",
-      "dest": "/public/css/output.css"
-    },
-    {
       "src": "/(.*)",
       "dest": "index.ts"
     }

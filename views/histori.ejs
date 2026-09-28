@@ -1,128 +1,114 @@
 <%- include('partials/mainHeader') %>
-<div class="grid grid-cols-3 gap-2 mb-6">
-    <a href="/akun_tabungan" class="bg-white/60 hover:bg-white text-center text-xs font-medium text-gray-800 py-2.5 px-1 rounded-xl shadow-xs border border-white/30 transition-all">Akun</a>
-    <a href="/kategori?tab=pengeluaran" class="bg-white/60 hover:bg-white text-center text-xs font-bold text-gray-900 py-2.5 px-1 rounded-xl shadow-xs border border-blue-300 transition-all">Kategori</a>
-    <a href="/histori" class="bg-white/80  text-center text-xs font-medium text-gray-800 py-2.5 px-1 rounded-xl shadow-xs border border-white/30 transition-all">Histori</a>
+
+<!-- Navigasi Tab -->
+<div data-reveal class="grid grid-cols-4 gap-2 mb-6">
+    <a href="/akun_tabungan" class="bg-white/60 hover:bg-white text-center text-[10px] font-medium text-gray-800 py-2.5 px-1 rounded-xl shadow-xs border border-white/30 transition-all">Akun</a>
+    <a href="/kategori?tab=pengeluaran" class="bg-white/60 hover:bg-white text-center text-[10px] font-medium text-gray-800 py-2.5 px-1 rounded-xl shadow-xs border border-white/30 transition-all">Kategori</a>
+    <a href="#" class="bg-white/60 hover:bg-white text-center text-[10px] font-medium text-gray-800 py-2.5 px-1 rounded-xl shadow-xs border border-white/30 transition-all">Analisis</a>
+    <a href="/histori" class="bg-white/80 text-center text-[10px] font-bold text-gray-900 py-2.5 px-1 rounded-xl shadow-xs border border-blue-300 transition-all">History</a>
 </div>
-<div class="container">
-    <!-- PANEL FORM EDIT HISTORI JIKA AKTIF -->
-    <% if (editHistori) { %>
-        <div style="background: #fff3cd; padding: 20px; border-radius: 6px; margin-bottom: 30px; border: 1px solid #ffe69c;">
-            <h3>Edit Histori Data</h3>
-            <form action="/histori/update/<%= editHistori.id_histori %>" method="POST">
-                <table>
-                    <tbody>
-                        <tr>
-                            <td>Akun Sumber:</td>
-                            <td>
-                                <select name="input_nama_akun_baru" required>
-                                    <% akunTabungan.forEach(function(p) { %>
-                                        <option value="<%= p.nama_akun %>" <%= editHistori.nama_akun === p.nama_akun ? 'selected' : '' %>><%= p.nama_akun %></option>
-                                    <% }); %>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Kategori:</td>
-                            <td>
-                                <select name="input_kategori_baru" required>
-                                    <% kategori.forEach(function(p) { %>
-                                        <option value="<%= p.nama_kategori %>" <%= editHistori.kategori === p.nama_kategori ? 'selected' : '' %>><%= p.nama_kategori %></option>
-                                    <% }); %>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Sub Kategori:</td>
-                            <td><input type="text" name="input_sub_kategori_baru" value="<%= editHistori.sub_kategori %>"></td>
-                        </tr>
-                        <tr>
-                            <td>Nominal Perubahan:</td>
-                            <td><input type="number" name="input_perubahan_baru" value="<%= editHistori.perubahan %>" required></td>
-                        </tr>
-                        <tr>
-                            <td>Tanggal:</td>
-                            <td><input type="date" name="input_tanggal_baru" value="<%= editHistori.tanggal %>" required></td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                <a href="/histori" style="margin-right:15px; color:#dc3545; text-decoration:none; font-weight:bold;">Batal Edit</a>
-                                <button type="submit" style="background:#198754; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;">Simpan Perubahan</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </form>
+
+<!-- Filter Waktu -->
+<div data-reveal data-reveal-delay="60" class="flex justify-end mb-4">
+    <button class="bg-white/80 hover:bg-white text-xs font-semibold text-gray-800 px-3 py-1.5 rounded-full flex items-center gap-1 shadow-sm transition-all border border-white/40">
+        All Time
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+    </button>
+</div>
+
+<!-- Panel Form Edit Histori -->
+<% if (editHistori) { %>
+    <div data-reveal="scale" class="bg-white/90 backdrop-blur-md rounded-2xl p-5 shadow-sm border border-white/40 mb-6">
+        <h3 class="text-sm font-bold text-slate-800 mb-4">Edit Histori Data</h3>
+        <form action="/histori/update/<%= editHistori.id_histori %>" method="POST" class="space-y-3">
+            <div class="flex flex-col">
+                <label class="text-[10px] font-bold text-slate-700 mb-1">Akun Sumber</label>
+                <select name="input_nama_akun_baru" required class="w-full bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <% akunTabungan.forEach(function(p) { %>
+                        <option value="<%= p.nama_akun %>" <%= editHistori.id_akun_src == p.id_akun ? 'selected' : '' %>><%= p.nama_akun %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="flex flex-col">
+                <label class="text-[10px] font-bold text-slate-700 mb-1">Kategori</label>
+                <select name="input_kategori_baru" required class="w-full bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <% kategori.forEach(function(p) { %>
+                        <option value="<%= p.nama_kategori %>" <%= editHistori.id_kategori == p.id_kategori ? 'selected' : '' %>><%= p.nama_kategori %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="flex flex-col">
+                <label class="text-[10px] font-bold text-slate-700 mb-1">Sub Kategori</label>
+                <input type="text" name="input_sub_kategori_baru" value="<%= editHistori.sub_kategori %>" class="w-full bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="flex flex-col">
+                <label class="text-[10px] font-bold text-slate-700 mb-1">Nominal Perubahan</label>
+                <input type="number" name="input_perubahan_baru" value="<%= editHistori.perubahan %>" required class="w-full bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="flex flex-col">
+                <label class="text-[10px] font-bold text-slate-700 mb-1">Tanggal</label>
+                <input type="date" name="input_tanggal_baru" value="<%= editHistori.tanggal %>" required class="w-full bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="flex gap-2 pt-2">
+                <a href="/histori" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-bold py-2 rounded-lg text-center transition-all">Batal</a>
+                <button type="submit" class="flex-1 bg-[#1e3a8a] hover:bg-blue-800 text-white text-xs font-bold py-2 rounded-lg text-center transition-all shadow-md">Simpan</button>
+            </div>
+        </form>
+    </div>
+<% } %>
+
+<!-- Daftar Riwayat Transaksi -->
+<div class="space-y-4">
+    <% dataHistoris.forEach(function(hari) { %>
+        <div data-reveal="fade" class="flex justify-between items-end px-1 mt-6 mb-2">
+            <div class="text-xs font-bold text-slate-800"><%= hari.tanggalTeks %></div>
+            <div class="flex gap-3 text-[10px] font-semibold">
+                <span class="text-emerald-600">Masuk : Rp <%= hari.pemasukan %></span>
+                <span class="text-red-600">Keluar : Rp <%= hari.pengeluaran %></span>
+                <span class="text-slate-800">Net : Rp <%= hari.cashFlow %></span>
+            </div>
+        </div>
+
+        <% hari.dataSehari.forEach(function(p, idx) { %>
+            <div data-reveal data-reveal-delay="<%= idx * 70 %>" class="bg-white/90 backdrop-blur-sm rounded-2xl p-4 mb-3 shadow-sm border border-white/40">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <h4 class="font-bold text-slate-800 text-sm"><%= p.nama_kategori %></h4>
+                        <div class="flex items-center gap-2 mt-1.5">
+                            <span class="bg-gray-200/80 text-gray-600 text-[9px] px-2 py-0.5 rounded-full font-semibold tracking-wide"><%= p.sub_kategori %></span>
+                            <span class="text-[9px] text-gray-500 font-medium">
+                                <%= new Date(p.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) %>, 01:30
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="text-right ml-2">
+                        <h4 class="font-semibold text-slate-800 text-xs"><%= p.nama_akun %></h4>
+                        <p class="font-bold text-sm mt-0.5 <%= p.jenis === 'Pemasukan' ? 'text-emerald-500' : 'text-red-500' %>">
+                            <%= p.jenis === 'Pemasukan' ? '+' : '-' %>Rp <%= Math.abs(p.perubahan).toLocaleString('id-ID', { minimumFractionDigits: 0 }) %>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100/80">
+                    <% if (p.jenis === 'Pemasukan' || p.jenis === 'Pengeluaran') { %>
+                        <a href="/histori?edit_histori_id=<%= p.id %>" class="flex-1 bg-[#1e3a8a] hover:bg-blue-800 text-white text-[10px] font-bold py-2 rounded-xl text-center transition-all shadow-sm">Edit</a>
+                    <% } %>
+                    <form action="/histori/hapus/<%= p.id %>" method="POST" class="flex-1" onsubmit="return confirm('Hapus data histori ini secara permanen?')">
+                        <button type="submit" class="w-full bg-transparent hover:bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold py-2 rounded-xl text-center transition-all">Hapus</button>
+                    </form>
+                </div>
+            </div>
+        <% }); %>
+    <% }); %>
+
+    <% if (dataHistoris.length === 0) { %>
+        <div data-reveal="fade" class="text-center text-slate-500 text-xs py-10 bg-white/60 rounded-2xl border border-white/40">
+            Belum ada riwayat transaksi.
         </div>
     <% } %>
-
-    <!-- BLOK TABEL UTAMA HISTORI DATA HARIAN -->
-    <h3>Daftar Riwayat Transaksi</h3>
-    
-    <table>
-        <tbody>
-            <tr>
-                <td>
-                    <% dataHistoris.forEach(function(hari) { %>
-                    <table border="1" cellpadding="5" cellspacing="0">
-                        <thead>
-                            <tr class="tgl-header">
-                                <td colspan="2"><%= hari.tanggalTeks %></td>
-                                <td class="text-pemasukan">
-                                    <p style="color: green;">Pemasukan: Rp <%= hari.pemasukan %></p>
-                                </td>
-                                <td class="text-pengeluaran">
-                                    <p style="color: red;">Pengeluaran: Rp<%= hari.pengeluaran %></p>
-                                </td>
-                                <td style="font-weight:bold;" colspan="2">
-                                    Net: Rp <%= hari.cashFlow %>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Akun Rekening</th>
-                                <th>Kategori</th>
-                                <th>Jenis</th>
-                                <th>Sub Kategori</th>
-                                <th>Nominal</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% hari.dataSehari.forEach(function(p) { %>
-                                <tr>
-                                    <td><%= p.nama_akun %></td>
-                                    <td><%= p.nama_kategori %></td>
-                                    <td>
-                                        <span class="<%= p.jenis === 'Pemasukan' ? 'text-pemasukan' : 'text-pengeluaran' %>">
-                                            <%= p.jenis %>
-                                        </span>
-                                    </td>
-                                    <td><%= p.sub_kategori %></td>
-                                    <td>
-                                        <span class="<%= p.jenis === 'Pemasukan' ? 'text-pemasukan' : 'text-pengeluaran' %>">
-                                            Rp <%= p.perubahan.toLocaleString('id-ID', { minimumFractionDigits: 2 }) %>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <% if (p.jenis === 'Pemasukan' || p.jenis === 'Pengeluaran') { %>
-                                            <button>
-                                                <a href="/histori?edit_histori_id=<%= p.id %>" text-decoration:none; font-weight:bold; margin-right:10px;">Edit</a>
-                                            </button>
-                                        <% } %>
-                                        
-                                        <form action="/histori/hapus/<%= p.id %>" method="POST" style="display:inline;" onsubmit="return confirm('Hapus data histori ini secara permanen?')">
-                                            <button type="submit" color:#dc3545; cursor:pointer; font-weight:bold; padding:0;">Hapus</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            <% }); %>
-                        </tbody>
-                    </table>
-                    <br>
-                    <% }); %>       
-                </td>
-            </tr>
-        </tbody>
-    </table>
 </div>
+
 <%- include('partials/mainFooter') %>

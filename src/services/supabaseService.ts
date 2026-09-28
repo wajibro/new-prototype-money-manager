@@ -8,7 +8,7 @@ interface QueryOptions {
     order1State?: boolean;
     order2?: string;
     order2State?: boolean;
-}
+};
 
 export const selectTable = async (table: string, options: QueryOptions = {}):Promise<any[]> =>{
     let query = supabase.from(table).select(options.select || '*');
@@ -37,9 +37,9 @@ export const insertTable = async (table:string, data:object):Promise<void> => {
 export const updateTable = async (table:string, data:object, eqCol:string, eqRow:any):Promise<void> => {
     const { error } = await supabase.from(table).update(data).eq(eqCol, eqRow);
     if (error) throw new Error(`${error.message}`);
-}
+};
 
 export const deleteTable = async (table:string, eqCol:string, eqRow:any):Promise<void> => {
     const { error } = await supabase.from(table).delete().eq(eqCol, eqRow);
     if (error) throw new Error(`${error.message}`);
-}
+};
