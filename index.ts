@@ -12,6 +12,7 @@ import authRoutes from './src/routes/authRoutes.js';
 import kategoriRoutes from './src/routes/kategoriRoutes.js';
 import akunRoutes from './src/routes/akunRoutes.js';
 import historiRoutes from './src/routes/historiRoutes.js';
+import analisisRoutes from './src/routes/analisisRoutes.js';
 
 const app = express();
 const PostgresSessionStore = pgSession(session);
@@ -62,6 +63,7 @@ app.use('/auth', authRoutes);
 app.use('/kategori', kategoriRoutes);
 app.use('/akun_tabungan', akunRoutes);
 app.use('/histori', historiRoutes);
+app.use('/analisis', analisisRoutes);
 
 if (!Config.IS_PRODUCTION) {
     app.listen(Config.PORT, () => {

@@ -1,0 +1,432 @@
+<%- include('partials/mainHeader') %>
+
+<!-- Navigasi Tab -->
+<div data-reveal class="grid grid-cols-4 gap-2 mb-6">
+    <a href="/akun_tabungan" class="bg-white/60 hover:bg-white text-center text-[10px] font-medium text-gray-800 py-2.5 px-1 rounded-xl shadow-xs border border-white/30 transition-all">Akun</a>
+    <a href="/kategori?tab=pengeluaran" class="bg-white/60 hover:bg-white text-center text-[10px] font-medium text-gray-800 py-2.5 px-1 rounded-xl shadow-xs border border-white/30 transition-all">Kategori</a>
+    <a href="/analisis" class="bg-white/80 text-center text-[10px] font-bold text-gray-900 py-2.5 px-1 rounded-xl shadow-xs border border-blue-300 transition-all">Analisis</a>
+    <a href="/histori" class="bg-white/60 hover:bg-white text-center text-[10px] font-medium text-gray-800 py-2.5 px-1 rounded-xl shadow-xs border border-white/30 transition-all">History</a>
+</div>
+
+<!-- ═══════════ SECTION 1: Donut Analisis Pengeluaran per Bulan ═══════════ -->
+<div data-reveal class="bg-white/60 backdrop-blur-md rounded-2xl p-4 shadow-md border border-white/40 mb-6">
+    <h2 class="text-sm font-bold text-slate-800 mb-4">Analisis Pengeluaran per Bulan</h2>
+    <div id="donutContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    <div id="donutEmpty" class="hidden text-center text-xs text-slate-500 py-8">Belum ada data analisis pengeluaran.</div>
+</div>
+
+<!-- ═══════════ SECTION 2: Riwayat Saldo Harian ═══════════ -->
+<div data-reveal data-reveal-delay="60" class="bg-white/60 backdrop-blur-md rounded-2xl p-4 shadow-md border border-white/40 mb-6">
+    <h2 class="text-sm font-bold text-slate-800 mb-3">Riwayat Saldo Harian, Pemasukan & Pengeluaran</h2>
+    <div class="relative" style="height: 260px;">
+        <canvas id="chartSaldoLine"></canvas>
+    </div>
+    <div class="relative mt-3" style="height: 140px;">
+        <canvas id="chartSaldoBar"></canvas>
+    </div>
+</div>
+
+<!-- ═══════════ SECTION 3: Saldo Harian per Akun ═══════════ -->
+<div data-reveal data-reveal-delay="120" class="bg-white/60 backdrop-blur-md rounded-2xl p-4 shadow-md border border-white/40 mb-6">
+    <h2 class="text-sm font-bold text-slate-800 mb-3">Riwayat Saldo Harian per Akun</h2>
+    <div id="perAkunContainer" class="space-y-5"></div>
+    <div id="perAkunEmpty" class="hidden text-center text-xs text-slate-500 py-8">Belum ada data saldo per akun.</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════
+// Data injection
+// ═══════════════════════════════════════════════════════════
+const analisisData    = <%- analisisDataJson %>;
+const saldoHarianData = <%- saldoHarianJson %>;
+const saldoPerAkunData= <%- saldoPerAkunJson %>;
+
+// ═══════════════════════════════════════════════════════════
+// Helpers
+// ═══════════════════════════════════════════════════════════
+const BASE_COLORS = ["#4E79A7","#F28E2B","#E15759","#76B7B2","#59A14F","#EDC948","#B07AA1","#FF9DA7"];
+const SUB_LIGHTEN = 0.45;
+const SUB_MIN_SHADE = 0.15;
+const PALETTE = ['#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#e377c2','#7f7f7f','#bcbd22','#17becf'];
+const POINT_STYLES = ['circle','rect','triangle','rectRot','star','cross','crossRot','rectRounded','triangleRot','line'];
+
+function hexToRgb(hex){
+    const h = hex.replace('#','');
+    return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+}
+function shade(hex, factor){
+    let [r,g,b] = hexToRgb(hex);
+    if (factor >= 0){
+        r = r + (255-r)*factor;
+        g = g + (255-g)*factor;
+        b = b + (255-b)*factor;
+    } else {
+        r *= (1+factor); g *= (1+factor); b *= (1+factor);
+    }
+    return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+}
+function fmtRp(n){
+    return 'Rp ' + Number(n||0).toLocaleString('id-ID', { maximumFractionDigits: 0 });
+}
+function fmtTanggal(str){
+    if (!str) return '';
+    const d = new Date(str);
+    return d.toLocaleDateString('id-ID', { day:'2-digit', month:'short' });
+}
+function parseMaybeJson(v){
+    if (v == null) return {};
+    if (typeof v === 'string'){ try { return JSON.parse(v); } catch(e){ return {}; } }
+    return v;
+}
+
+// ═══════════════════════════════════════════════════════════
+// SECTION 1 — Donut per Bulan (kategori dalam, sub-kategori luar)
+// ═══════════════════════════════════════════════════════════
+(function renderDonuts(){
+    const container = document.getElementById('donutContainer');
+    const emptyEl = document.getElementById('donutEmpty');
+
+    if (!Array.isArray(analisisData) || analisisData.length === 0){
+        emptyEl.classList.remove('hidden');
+        return;
+    }
+
+    analisisData.forEach((row, idx) => {
+        const bulan = row.bulan || 'unknown';
+        const kategoriDict = parseMaybeJson(row.kategori_dictionary);
+        const subDict      = parseMaybeJson(row.sub_kategori_dictionary);
+
+        // Urutkan kategori berdasarkan nominal desc
+        const categories = Object.keys(kategoriDict)
+            .sort((a,b) => Math.abs(kategoriDict[b].nominal||0) - Math.abs(kategoriDict[a].nominal||0));
+
+        if (categories.length === 0){
+            container.innerHTML += `<div class="bg-white/70 rounded-xl p-3 border border-white/40 text-center text-xs text-slate-500 py-8">${bulan}: tidak ada data</div>`;
+            return;
+        }
+
+        const catColorMap = {};
+        categories.forEach((c, i) => catColorMap[c] = BASE_COLORS[i % BASE_COLORS.length]);
+
+        const catValues = categories.map(c => Math.abs(kategoriDict[c].nominal || 0));
+        const catPcts   = categories.map(c => kategoriDict[c].persentase || 0);
+        const catColors = categories.map(c => catColorMap[c]);
+        const totalCat  = catValues.reduce((s,v)=>s+v,0);
+
+        // Sub-kategori (dikelompokkan per kategori induk, mempertahankan urutan)
+        const subLabels = [], subValues = [], subPcts = [], subColors = [], subKategoriName = [];
+        categories.forEach(cat => {
+            const subs = subDict[cat] || {};
+            const entries = Object.entries(subs)
+                .sort((a,b) => Math.abs(b[1].nominal||0) - Math.abs(a[1].nominal||0));
+            const n = entries.length;
+            const base = catColorMap[cat];
+            entries.forEach(([subName, info], j) => {
+                const factor = n === 1
+                    ? SUB_LIGHTEN
+                    : SUB_LIGHTEN - (SUB_LIGHTEN - SUB_MIN_SHADE) * (j / (n - 1));
+                subLabels.push(subName);
+                subKategoriName.push(cat);
+                subValues.push(Math.abs(info.nominal || 0));
+                subPcts.push(info.persentase || 0);
+                subColors.push(shade(base, factor));
+            });
+        });
+
+        // Wrapper HTML
+        const wrap = document.createElement('div');
+        wrap.className = 'bg-white/70 rounded-xl p-3 border border-white/40';
+        wrap.innerHTML = `
+            <div class="text-center text-xs font-bold text-slate-800 mb-2">
+                ${bulan} &nbsp;—&nbsp; Total: ${fmtRp(totalCat)}
+            </div>
+            <div class="relative" style="height: 320px;">
+                <canvas id="donut-${idx}"></canvas>
+            </div>
+            <div class="mt-3">
+                <div class="text-[10px] font-bold text-slate-700 mb-1 text-center tracking-wide">KATEGORI</div>
+                <div id="legendCat-${idx}" class="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[9px] text-slate-700"></div>
+            </div>
+            <div class="mt-2">
+                <div class="text-[10px] font-bold text-slate-700 mb-1 text-center tracking-wide">SUB-KATEGORI</div>
+                <div id="legendSub-${idx}" class="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[9px] text-slate-700"></div>
+            </div>
+        `;
+        container.appendChild(wrap);
+
+        // Chart.js doughnut — dataset[0] = inner (kategori), dataset[1] = outer (sub-kategori)
+        new Chart(document.getElementById(`donut-${idx}`), {
+            type: 'doughnut',
+            data: {
+                labels: categories,
+                datasets: [
+                    {
+                        label: 'Kategori',
+                        data: catValues,
+                        backgroundColor: catColors,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Sub-Kategori',
+                        data: subValues,
+                        backgroundColor: subColors,
+                        borderColor: '#fff',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '45%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                const val = ctx.parsed;
+                                const total = ctx.dataset.data.reduce((s,v)=>s+v,0);
+                                const pct = total > 0 ? (val/total*100).toFixed(2) : '0.00';
+                                return `${ctx.label}: ${fmtRp(val)} (${pct}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Legend KATEGORI
+        const legendCat = document.getElementById(`legendCat-${idx}`);
+        categories.forEach((c, i) => {
+            const pct = (typeof catPcts[i] === 'number' ? catPcts[i] : parseFloat(catPcts[i]) || 0).toFixed(2);
+            legendCat.innerHTML += `<div class="flex items-center gap-1">
+                <span style="display:inline-block;width:8px;height:8px;background:${catColors[i]};border-radius:2px;"></span>
+                <span>${c} (${pct}%)</span></div>`;
+        });
+
+        // Legend SUB-KATEGORI
+        const legendSub = document.getElementById(`legendSub-${idx}`);
+        subLabels.forEach((s, i) => {
+            const pct = (typeof subPcts[i] === 'number' ? subPcts[i] : parseFloat(subPcts[i]) || 0).toFixed(2);
+            legendSub.innerHTML += `<div class="flex items-center gap-1">
+                <span style="display:inline-block;width:8px;height:8px;background:${subColors[i]};border-radius:2px;"></span>
+                <span>${s} (${pct}%)</span></div>`;
+        });
+    });
+})();
+
+// ═══════════════════════════════════════════════════════════
+// SECTION 2 — Line (saldo) + Bar (pemasukan/pengeluaran)
+// ═══════════════════════════════════════════════════════════
+(function renderSaldoHarian(){
+    if (!Array.isArray(saldoHarianData) || saldoHarianData.length === 0) return;
+
+    const labels = saldoHarianData.map(r => r.tanggal);
+    const saldoAkhir = saldoHarianData.map(r => Number(r.total_saldo_akhir_sistem) || 0);
+    const pemasukan  = saldoHarianData.map(r => Number(r.pemasukan) || 0);
+    const pengeluaran= saldoHarianData.map(r => Number(r.pengeluaran) || 0);
+
+    // ── Line total saldo
+    new Chart(document.getElementById('chartSaldoLine'), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Total Saldo Akhir',
+                data: saldoAkhir,
+                borderColor: '#1f77b4',
+                backgroundColor: 'rgba(31,119,180,0.10)',
+                fill: true,
+                tension: 0.2,
+                borderWidth: 2,
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                pointBackgroundColor: '#1f77b4'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top', labels: { font: { size: 10 }, boxWidth: 12 } },
+                title: {
+                    display: true,
+                    text: 'Riwayat Saldo Harian, Pemasukan & Pengeluaran',
+                    font: { size: 12, weight: 'bold' },
+                    color: '#0f172a'
+                },
+                tooltip: {
+                    callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtRp(ctx.parsed.y)}` }
+                }
+            },
+            scales: {
+                x: { display: false },
+                y: {
+                    ticks: { callback: v => Number(v).toLocaleString('id-ID'), font: { size: 10 } },
+                    grid: { color: 'rgba(0,0,0,0.05)' }
+                }
+            }
+        }
+    });
+
+    // ── Bar pemasukan / pengeluaran
+    new Chart(document.getElementById('chartSaldoBar'), {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [
+                { label: 'Pemasukan',   data: pemasukan,   backgroundColor: '#2ecc71', borderRadius: 3 },
+                { label: 'Pengeluaran', data: pengeluaran, backgroundColor: '#e74c3c', borderRadius: 3 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top', labels: { font: { size: 10 }, boxWidth: 12 } },
+                tooltip: {
+                    callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtRp(ctx.parsed.y)}` }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        callback: function(val) { return fmtTanggal(this.getLabelForValue(val)); },
+                        maxRotation: 45, minRotation: 45,
+                        autoSkip: true, maxTicksLimit: 15,
+                        font: { size: 9 }
+                    },
+                    grid: { display: false }
+                },
+                y: {
+                    ticks: { callback: v => Number(v).toLocaleString('id-ID'), font: { size: 10 } },
+                    grid: { color: 'rgba(0,0,0,0.05)' }
+                }
+            }
+        }
+    });
+})();
+
+// ═══════════════════════════════════════════════════════════
+// SECTION 3 — Saldo per akun, dikelompokkan berdasarkan skala
+// ═══════════════════════════════════════════════════════════
+(function renderPerAkun(){
+    const container = document.getElementById('perAkunContainer');
+    const emptyEl = document.getElementById('perAkunEmpty');
+
+    if (!Array.isArray(saldoPerAkunData) || saldoPerAkunData.length === 0){
+        emptyEl.classList.remove('hidden');
+        return;
+    }
+
+    // Daftar tanggal unik (sorted)
+    const tanggalList = Array.from(new Set(saldoPerAkunData.map(r => r.tanggal))).sort();
+
+    // Pivot: { nama_akun: { tanggal: saldo } }
+    const byAccount = {};
+    saldoPerAkunData.forEach(r => {
+        const name = (r.nama_akun || '').trim();
+        if (!name) return;
+        if (!byAccount[name]) byAccount[name] = {};
+        byAccount[name][r.tanggal] = Number(r.total_saldo_akhir) || 0;
+    });
+
+    // Forward-fill nilai kosong
+    Object.keys(byAccount).forEach(acc => {
+        let last = null;
+        tanggalList.forEach(t => {
+            if (byAccount[acc][t] !== undefined) last = byAccount[acc][t];
+            else byAccount[acc][t] = last; // boleh null -> spanGaps
+        });
+    });
+
+    // Skala maksimum absolut tiap akun
+    const maxAbs = {};
+    Object.keys(byAccount).forEach(acc => {
+        let m = 0;
+        tanggalList.forEach(t => {
+            const v = byAccount[acc][t];
+            if (v !== null && Math.abs(v) > m) m = Math.abs(v);
+        });
+        maxAbs[acc] = m;
+    });
+
+    // Kelompokkan
+    const BATAS_BESAR = 1_000_000;
+    const BATAS_SEDANG = 100_000;
+    const akunBesar = [], akunSedang = [], akunKecil = [];
+    Object.keys(byAccount).forEach(acc => {
+        if (maxAbs[acc] >= BATAS_BESAR) akunBesar.push(acc);
+        else if (maxAbs[acc] >= BATAS_SEDANG) akunSedang.push(acc);
+        else akunKecil.push(acc);
+    });
+
+    const grup = [
+        { judul: 'Saldo Besar (≥ 1 juta)',   akun: akunBesar },
+        { judul: 'Saldo Sedang (100rb–1jt)', akun: akunSedang },
+        { judul: 'Saldo Kecil (< 100rb)',    akun: akunKecil }
+    ].filter(g => g.akun.length > 0);
+
+    grup.forEach((g, gi) => {
+        const block = document.createElement('div');
+        block.className = 'bg-white/70 rounded-xl p-3 border border-white/40';
+        block.innerHTML = `
+            <div class="text-xs font-bold text-slate-800 mb-2">${g.judul}</div>
+            <div class="relative" style="height: 240px;">
+                <canvas id="perAkunChart-${gi}"></canvas>
+            </div>
+        `;
+        container.appendChild(block);
+
+        const datasets = g.akun.map((acc, i) => ({
+            label: acc,
+            data: tanggalList.map(t => byAccount[acc][t]),
+            borderColor: PALETTE[i % PALETTE.length],
+            backgroundColor: PALETTE[i % PALETTE.length],
+            pointStyle: POINT_STYLES[i % POINT_STYLES.length],
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            borderWidth: 1.8,
+            tension: 0.15,
+            spanGaps: true
+        }));
+
+        new Chart(document.getElementById(`perAkunChart-${gi}`), {
+            type: 'line',
+            data: { labels: tanggalList, datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { font: { size: 10 }, boxWidth: 12, boxHeight: 12, usePointStyle: true }
+                    },
+                    tooltip: {
+                        callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtRp(ctx.parsed.y)}` }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            callback: function(val) { return fmtTanggal(this.getLabelForValue(val)); },
+                            maxRotation: 45, minRotation: 45,
+                            autoSkip: true, maxTicksLimit: 15,
+                            font: { size: 9 }
+                        },
+                        grid: { display: false }
+                    },
+                    y: {
+                        ticks: { callback: v => Number(v).toLocaleString('id-ID'), font: { size: 10 } },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    }
+                }
+            }
+        });
+    });
+})();
+</script>
+
+<%- include('partials/mainFooter') %>

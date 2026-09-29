@@ -64,6 +64,6 @@
                 </div>
             </div>
         </div>
-        <% if (message) { %>
+        <% if (typeof message !== 'undefined' && message) { %>
             <div data-reveal="fade" class="alert"><%= message %></div>
         <% } %>
