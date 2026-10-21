@@ -3,9 +3,9 @@
 <!-- Navigasi Tab -->
 <div data-reveal class="grid grid-cols-4 gap-2 mb-6">
     <a href="/akun_tabungan" class="bg-white/60 hover:bg-white text-center text-[10px] font-medium text-gray-800 py-2.5 px-1 rounded-xl shadow-xs border border-white/30 transition-all">Akun</a>
-    <a href="/kategori?tab=pengeluaran" class="bg-white/80 text-center text-[10px] font-bold text-gray-900 py-2.5 px-1 rounded-xl shadow-xs border border-blue-300 transition-all">Kategori</a>
+    <a href="/kategori?tab=pengeluaran" class="bg-white/60 hover:bg-white text-center text-[10px] font-medium text-gray-800 py-2.5 px-1 rounded-xl shadow-xs border border-white/30 transition-all">Kategori</a>
     <a href="/analisis" class="bg-white/60 hover:bg-white text-center text-[10px] font-medium text-gray-800 py-2.5 px-1 rounded-xl shadow-xs border border-white/30 transition-all">Analisis</a>
-    <a href="/histori" class="bg-white/60 hover:bg-white text-center text-[10px] font-medium text-gray-800 py-2.5 px-1 rounded-xl shadow-xs border border-white/30 transition-all">History</a>
+    <a href="/histori" class="bg-white/80 text-center text-[10px] font-bold text-gray-900 py-2.5 px-1 rounded-xl shadow-xs border border-blue-300 transition-all">History</a>
 </div>
 
 <!-- Filter Waktu -->
@@ -79,46 +79,93 @@
 <!-- Daftar Riwayat Transaksi -->
 <div class="space-y-4">
     <% dataHistoris.forEach(function(hari) { %>
-        <div data-reveal="fade" class="flex justify-between items-end px-1 mt-6 mb-2">
-            <div class="text-xs font-bold text-slate-800"><%= hari.tanggalTeks %></div>
-            <div class="flex gap-3 text-[10px] font-semibold">
-                <span class="text-emerald-600">Masuk : Rp <%= hari.pemasukan %></span>
-                <span class="text-red-600">Keluar : Rp <%= hari.pengeluaran %></span>
-                <span class="text-slate-800">Net : Rp <%= hari.cashFlow %></span>
+        <!-- Bagian Tanggal dan Summary Harian -->
+        <div data-reveal="fade" class="flex flex-wrap items-center gap-2 px-1 mt-6 mb-2">
+            
+            <!-- Tanggal dengan background pil -->
+            <div class="bg-white/90 text-slate-800 border border-slate-300 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm mr-1">
+                <%= hari.tanggalTeks %>
             </div>
+            
+            <span class="bg-emerald-100/60 text-emerald-700 border border-emerald-300/50 text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                <span class="text-xs">↓</span> Rp <%= hari.pemasukan %>
+            </span>
+            
+            <span class="bg-red-100/60 text-red-700 border border-red-300/50 text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                <span class="text-xs">↑</span> Keluar : Rp <%= hari.pengeluaran %>
+            </span>
+
+            <!-- Logika Pewarnaan Net -->
+            <% 
+                // Bersihkan format string (misal "-5.000" menjadi -5000)
+                const cleanNetStr = String(hari.cashFlow).replace(/\./g, '').replace(/,/g, '.');
+                const netVal = parseFloat(cleanNetStr) || 0;
+                
+                // Default warna netral (jika 0)
+                let netClass = 'bg-slate-100/90 text-slate-800 border-slate-300';
+                
+                if (netVal > 0) {
+                    // Warna Hijau jika positif
+                    netClass = 'bg-emerald-100/60 text-emerald-700 border-emerald-300/50';
+                } else if (netVal < 0) {
+                    // Warna Merah jika negatif
+                    netClass = 'bg-red-100/60 text-red-700 border-red-300/50';
+                }
+            %>
+            
+            <span class="<%= netClass %> border text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">
+                Net : Rp <%= hari.cashFlow %>
+            </span>
         </div>
 
-        <% hari.dataSehari.forEach(function(p, idx) { %>
-            <div data-reveal data-reveal-delay="<%= idx * 70 %>" class="bg-white/60 backdrop-blur-md rounded-2xl p-6 mb-3 shadow-md border border-white/40 text-slate-800">
-                <div class="flex justify-between items-start">
-                    <div class="flex-1">
-                        <h4 class="font-bold text-slate-800 text-sm"><%= p.nama_kategori %></h4>
-                        <div class="flex items-center gap-2 mt-1.5">
-                            <span class="bg-gray-200/80 text-gray-600 text-[9px] px-2 py-0.5 rounded-full font-semibold tracking-wide"><%= p.sub_kategori %></span>
-                            <span class="text-[9px] text-gray-500 font-medium">
-                                <%= new Date(p.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) %>
-                            </span>
+        <!-- Grid Card Transaksi -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
+            <% hari.dataSehari.forEach(function(p, idx) { %>
+                <div data-reveal data-reveal-delay="<%= idx * 70 %>" class="bg-white/60 backdrop-blur-md rounded-2xl p-6 shadow-md border border-white/40 text-slate-800">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h4 class="font-bold text-slate-800 text-sm">
+                                <%= p.jenis === 'Transfer' ? 'Transfer' : p.nama_kategori %>
+                            </h4>
+                            <div class="flex items-center gap-2 mt-1.5">
+                                <% if (p.jenis !== 'Transfer') { %>
+                                    <span class="bg-gray-200/80 text-gray-600 text-[9px] px-2 py-0.5 rounded-full font-semibold tracking-wide"><%= p.sub_kategori %></span>
+                                <% } %>
+                                <span class="text-[9px] text-gray-500 font-medium">
+                                    <%= new Date(p.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) %>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="text-right ml-2">
+                            <h4 class="font-semibold text-slate-800 text-xs">
+                                <% if (p.jenis === 'Transfer') { %>
+                                    <%= p.nama_akun %> <span class="text-slate-400">→</span> <%= p.nama_akun_target %>
+                                <% } else { %>
+                                    <%= p.nama_akun %>
+                                <% } %>
+                            </h4>
+                            <p class="font-bold text-sm mt-0.5 <%= p.jenis === 'Pemasukan' ? 'text-emerald-500' : (p.jenis === 'Transfer' ? 'text-slate-600' : 'text-red-500') %>">
+                                <% if (p.jenis === 'Transfer') { %>
+                                    Rp <%= Math.abs(p.perubahan).toLocaleString('id-ID', { minimumFractionDigits: 0 }) %>
+                                <% } else { %>
+                                    <%= p.jenis === 'Pemasukan' ? '+' : '-' %>Rp <%= Math.abs(p.perubahan).toLocaleString('id-ID', { minimumFractionDigits: 0 }) %>
+                                <% } %>
+                            </p>
                         </div>
                     </div>
 
-                    <div class="text-right ml-2">
-                        <h4 class="font-semibold text-slate-800 text-xs"><%= p.nama_akun %></h4>
-                        <p class="font-bold text-sm mt-0.5 <%= p.jenis === 'Pemasukan' ? 'text-emerald-500' : 'text-red-500' %>">
-                            <%= p.jenis === 'Pemasukan' ? '+' : '-' %>Rp <%= Math.abs(p.perubahan).toLocaleString('id-ID', { minimumFractionDigits: 0 }) %>
-                        </p>
+                    <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100/80">
+                        <% if (p.jenis === 'Pemasukan' || p.jenis === 'Pengeluaran') { %>
+                            <a href="/histori?edit_histori_id=<%= p.id %>&filter=<%= filterAktif %>&bulan=<%= bulanAktif %>" class="flex-1 bg-[#1e3a8a] hover:bg-blue-800 text-white text-[10px] font-bold py-2 rounded-xl text-center transition-all shadow-sm">Edit</a>
+                        <% } %>
+                        <form action="/histori/hapus/<%= p.id %>?filter=<%= filterAktif %>&bulan=<%= bulanAktif %>" method="POST" class="flex-1" onsubmit="return confirm('Hapus data histori ini secara permanen?')">
+                            <button type="submit" class="w-full bg-transparent hover:bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold py-2 rounded-xl text-center transition-all">Hapus</button>
+                        </form>
                     </div>
                 </div>
-
-                <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100/80">
-                    <% if (p.jenis === 'Pemasukan' || p.jenis === 'Pengeluaran') { %>
-                        <a href="/histori?edit_histori_id=<%= p.id %>&filter=<%= filterAktif %>&bulan=<%= bulanAktif %>" class="flex-1 bg-[#1e3a8a] hover:bg-blue-800 text-white text-[10px] font-bold py-2 rounded-xl text-center transition-all shadow-sm">Edit</a>
-                    <% } %>
-                    <form action="/histori/hapus/<%= p.id %>?filter=<%= filterAktif %>&bulan=<%= bulanAktif %>" method="POST" class="flex-1" onsubmit="return confirm('Hapus data histori ini secara permanen?')">
-                        <button type="submit" class="w-full bg-transparent hover:bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold py-2 rounded-xl text-center transition-all">Hapus</button>
-                    </form>
-                </div>
-            </div>
-        <% }); %>
+            <% }); %>
+        </div>
     <% }); %>
 
     <% if (dataHistoris.length === 0) { %>

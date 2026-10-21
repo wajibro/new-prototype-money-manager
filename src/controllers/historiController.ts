@@ -31,7 +31,12 @@ export const showHistoriPage = async (req: Request, res: Response, next: NextFun
             ? formatRupiah(totalSaldoNum)
             : 'Belum ada akun tabungan';
 
-        // Ambil semua data histori + relasi
+        // Ambil daftar akun lebih awal (dipakai untuk dropdown edit & resolve nama akun target)
+        const listAkun = await selectTable('akun_tabungan', { order1: 'nama_akun' });
+        const akunMap = new Map<string, string>();
+        listAkun.forEach((a: any) => akunMap.set(String(a.id_akun), a.nama_akun));
+
+        // Ambil semua data histori + relasi src & kategori (join hanya untuk kolom yang punya FK)
         const rawData = await selectTable('data_historis', {
             select: `
                 id_histori,
@@ -40,6 +45,7 @@ export const showHistoriPage = async (req: Request, res: Response, next: NextFun
                 sub_kategori,
                 perubahan,
                 id_akun_src,
+                id_akun_target,
                 id_kategori,
                 akun_tabungan!id_akun_src ( nama_akun ),
                 kategori!id_kategori ( nama_kategori )
@@ -105,6 +111,11 @@ export const showHistoriPage = async (req: Request, res: Response, next: NextFun
                 const resAkun = p.akun_tabungan as any;
                 const resKategori = p.kategori as any;
 
+                // Resolve nama akun target via Map (tidak butuh FK)
+                const namaAkunTarget = p.id_akun_target
+                    ? (akunMap.get(String(p.id_akun_target)) || 'Akun Terhapus')
+                    : '-';
+
                 return {
                     id: p.id_histori,
                     id_kategori: p.id_kategori,
@@ -113,6 +124,7 @@ export const showHistoriPage = async (req: Request, res: Response, next: NextFun
                     sub_kategori: p.sub_kategori,
                     perubahan: p.perubahan,
                     nama_akun: resAkun?.nama_akun || 'Akun Terhapus',
+                    nama_akun_target: namaAkunTarget,
                     nama_kategori: resKategori?.nama_kategori || ''
                 };
             });
@@ -121,14 +133,14 @@ export const showHistoriPage = async (req: Request, res: Response, next: NextFun
 
             return {
                 tanggalTeks: formatTanggalIndo(String(tgl)),
-                pengeluaran: pengeluaranSehariNum.toLocaleString('id-ID', { minimumFractionDigits: 2 }),
-                pemasukan: pemasukanSehariNum.toLocaleString('id-ID', { minimumFractionDigits: 2 }),
-                cashFlow: cashFlowNum.toLocaleString('id-ID', { minimumFractionDigits: 2 }),
+                // Gunakan minimumFractionDigits: 0 agar tidak ada ,00 di tampilan (sesuai gambar)
+                pengeluaran: pengeluaranSehariNum.toLocaleString('id-ID', { minimumFractionDigits: 0 }),
+                pemasukan: pemasukanSehariNum.toLocaleString('id-ID', { minimumFractionDigits: 0 }),
+                cashFlow: cashFlowNum.toLocaleString('id-ID', { minimumFractionDigits: 0 }),
                 dataSehari: dataSehariClean
             };
         });
 
-        const listAkun = await selectTable('akun_tabungan', { order1: 'nama_akun' });
         const listKategori = await selectTable('kategori', { order1: 'id_kategori' });
 
         res.render('histori', {
