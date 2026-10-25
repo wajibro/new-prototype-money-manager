@@ -8,10 +8,37 @@
     <a href="/histori" class="bg-white/60 hover:bg-white text-center text-[10px] font-medium text-gray-800 py-2.5 px-1 rounded-xl shadow-xs border border-white/30 transition-all">History</a>
 </div>
 
+<!-- ═══════════ FILTER WAKTU ═══════════ -->
+<div data-reveal data-reveal-delay="40" class="flex justify-end gap-2 mb-4">
+    <a href="/analisis?filter=all"
+       class="<%= filterAktif === 'all' ? 'bg-[#1e3a8a] text-white border-blue-800' : 'bg-white/80 hover:bg-white text-gray-800 border-white/40' %> text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-sm transition-all border">
+        All Time
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+    </a>
+
+    <form action="/analisis" method="GET" class="flex items-center gap-2">
+        <input type="hidden" name="filter" value="bulan">
+        <select name="bulan"
+            class="<%= filterAktif === 'bulan' ? 'bg-[#1e3a8a] text-white border-blue-800' : 'bg-white/80 hover:bg-white text-gray-800 border-white/40' %> text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm transition-all border focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <% listBulan.forEach(function(b) { %>
+                <option value="<%= b %>" <%= bulanAktif === b ? 'selected' : '' %>>
+                    <%= new Date(b + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) %>
+                </option>
+            <% }); %>
+        </select>
+        <button type="submit"
+            class="<%= filterAktif === 'bulan' ? 'bg-[#1e3a8a] text-white border-blue-800' : 'bg-white/80 hover:bg-white text-gray-800 border-white/40' %> text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-sm transition-all border">
+            Bulan
+        </button>
+    </form>
+</div>
+
 <!-- ═══════════ SECTION 1: Donut Analisis Pengeluaran per Bulan ═══════════ -->
 <div data-reveal class="bg-white/60 backdrop-blur-md rounded-2xl p-4 shadow-md border border-white/40 mb-6">
     <h2 class="text-sm font-bold text-slate-800 mb-4">Analisis Pengeluaran per Bulan</h2>
-    <div id="donutContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    <div id="donutContainer" class="grid grid-cols-1 gap-6"></div>
     <div id="donutEmpty" class="hidden text-center text-xs text-slate-500 py-8">Belum ada data analisis pengeluaran.</div>
 </div>
 
@@ -35,6 +62,18 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
+// ═══════════════════════════════════════════════════════════
+// Fungsi Global untuk Toggle Collapse Sub-Kategori
+// ═══════════════════════════════════════════════════════════
+window.toggleSubcat = function(subcatId, chevronId) {
+    const subcatEl = document.getElementById(subcatId);
+    const chevronEl = document.getElementById(chevronId);
+    if (subcatEl && chevronEl) {
+        subcatEl.classList.toggle('hidden');
+        chevronEl.classList.toggle('-rotate-90');
+    }
+};
+
 // ═══════════════════════════════════════════════════════════
 // Data injection
 // ═══════════════════════════════════════════════════════════
@@ -80,8 +119,17 @@ function parseMaybeJson(v){
     return v;
 }
 
+// TAMBAHAN FUNGSI: Format "2026-10" menjadi "Oktober 2026"
+function formatBulanIndo(bulanStr) {
+    if (!bulanStr || bulanStr === 'unknown') return bulanStr;
+    const dateObj = new Date(`${bulanStr}-01`);
+    if (isNaN(dateObj.getTime())) return bulanStr;
+    // Menghasilkan format "Oktober 2026"
+    return dateObj.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+}
+
 // ═══════════════════════════════════════════════════════════
-// SECTION 1 — Donut per Bulan (kategori dalam, sub-kategori luar)
+// SECTION 1 — Donut per Bulan & Grouped Progress Bar (Collapsible)
 // ═══════════════════════════════════════════════════════════
 (function renderDonuts(){
     const container = document.getElementById('donutContainer');
@@ -93,16 +141,16 @@ function parseMaybeJson(v){
     }
 
     analisisData.forEach((row, idx) => {
-        const bulan = row.bulan || 'unknown';
+        const rawBulan = row.bulan || 'unknown';
+        const bulanTeks = formatBulanIndo(rawBulan); // Gunakan format bulan teks
         const kategoriDict = parseMaybeJson(row.kategori_dictionary);
         const subDict      = parseMaybeJson(row.sub_kategori_dictionary);
 
-        // Urutkan kategori berdasarkan nominal desc
         const categories = Object.keys(kategoriDict)
             .sort((a,b) => Math.abs(kategoriDict[b].nominal||0) - Math.abs(kategoriDict[a].nominal||0));
 
         if (categories.length === 0){
-            container.innerHTML += `<div class="bg-white/70 rounded-xl p-3 border border-white/40 text-center text-xs text-slate-500 py-8">${bulan}: tidak ada data</div>`;
+            container.innerHTML += `<div class="bg-white/70 rounded-xl p-3 border border-white/40 text-center text-xs text-slate-500 py-8">${bulanTeks}: tidak ada data</div>`;
             return;
         }
 
@@ -114,8 +162,7 @@ function parseMaybeJson(v){
         const catColors = categories.map(c => catColorMap[c]);
         const totalCat  = catValues.reduce((s,v)=>s+v,0);
 
-        // Sub-kategori (dikelompokkan per kategori induk, mempertahankan urutan)
-        const subLabels = [], subValues = [], subPcts = [], subColors = [], subKategoriName = [];
+        const subLabels = [], subValues = [], subPcts = [], subColors = [];
         categories.forEach(cat => {
             const subs = subDict[cat] || {};
             const entries = Object.entries(subs)
@@ -127,35 +174,32 @@ function parseMaybeJson(v){
                     ? SUB_LIGHTEN
                     : SUB_LIGHTEN - (SUB_LIGHTEN - SUB_MIN_SHADE) * (j / (n - 1));
                 subLabels.push(subName);
-                subKategoriName.push(cat);
                 subValues.push(Math.abs(info.nominal || 0));
                 subPcts.push(info.persentase || 0);
                 subColors.push(shade(base, factor));
             });
         });
 
-        // Wrapper HTML
         const wrap = document.createElement('div');
-        wrap.className = 'bg-white/70 rounded-xl p-3 border border-white/40';
+        wrap.className = 'bg-white/80 rounded-2xl p-5 border border-white/50 shadow-sm';
+        
         wrap.innerHTML = `
-            <div class="text-center text-xs font-bold text-slate-800 mb-2">
-                ${bulan} &nbsp;—&nbsp; Total: ${fmtRp(totalCat)}
+            <div class="text-center md:text-left text-sm font-bold text-slate-800 mb-6">
+                ${bulanTeks} &nbsp;—&nbsp; Total: ${fmtRp(totalCat)}
             </div>
-            <div class="relative" style="height: 320px;">
-                <canvas id="donut-${idx}"></canvas>
-            </div>
-            <div class="mt-3">
-                <div class="text-[10px] font-bold text-slate-700 mb-1 text-center tracking-wide">KATEGORI</div>
-                <div id="legendCat-${idx}" class="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[9px] text-slate-700"></div>
-            </div>
-            <div class="mt-2">
-                <div class="text-[10px] font-bold text-slate-700 mb-1 text-center tracking-wide">SUB-KATEGORI</div>
-                <div id="legendSub-${idx}" class="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[9px] text-slate-700"></div>
+            
+            <div class="flex flex-col lg:flex-row gap-8 items-center lg:items-start">
+                <div class="w-[260px] sm:w-[300px] flex-shrink-0 relative" style="height: 260px;">
+                    <canvas id="donut-${idx}"></canvas>
+                </div>
+                
+                <div class="w-full flex-grow">
+                    <div id="groupedLegend-${idx}" class="space-y-4"></div>
+                </div>
             </div>
         `;
         container.appendChild(wrap);
 
-        // Chart.js doughnut — dataset[0] = inner (kategori), dataset[1] = outer (sub-kategori)
         new Chart(document.getElementById(`donut-${idx}`), {
             type: 'doughnut',
             data: {
@@ -180,7 +224,7 @@ function parseMaybeJson(v){
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: '45%',
+                cutout: '65%',
                 plugins: {
                     legend: { display: false },
                     tooltip: {
@@ -197,23 +241,69 @@ function parseMaybeJson(v){
             }
         });
 
-        // Legend KATEGORI
-        const legendCat = document.getElementById(`legendCat-${idx}`);
-        categories.forEach((c, i) => {
-            const pct = (typeof catPcts[i] === 'number' ? catPcts[i] : parseFloat(catPcts[i]) || 0).toFixed(2);
-            legendCat.innerHTML += `<div class="flex items-center gap-1">
-                <span style="display:inline-block;width:8px;height:8px;background:${catColors[i]};border-radius:2px;"></span>
-                <span>${c} (${pct}%)</span></div>`;
+        const groupedLegend = document.getElementById(`groupedLegend-${idx}`);
+        let legendHTML = '';
+
+        categories.forEach((cat, i) => {
+            const catVal = catValues[i];
+            const catPct = (typeof catPcts[i] === 'number' ? catPcts[i] : parseFloat(catPcts[i]) || 0).toFixed(2);
+            const catColor = catColors[i];
+
+            const subs = subDict[cat] || {};
+            const subEntries = Object.entries(subs)
+                .sort((a,b) => Math.abs(b[1].nominal||0) - Math.abs(a[1].nominal||0));
+            const hasSubs = subEntries.length > 0;
+
+            legendHTML += `
+                <div class="w-full ${hasSubs ? 'cursor-pointer group' : ''}" ${hasSubs ? `onclick="toggleSubcat('subcat-${idx}-${i}', 'chevron-${idx}-${i}')"` : ''}>
+                    <div class="flex justify-between items-end mb-1.5">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs font-bold text-slate-800 ${hasSubs ? 'group-hover:text-blue-600 transition-colors' : ''}">${cat}</span>
+                            ${hasSubs ? `
+                            <svg id="chevron-${idx}-${i}" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                            ` : ''}
+                        </div>
+                        <span class="text-[11px] font-semibold text-slate-600">${fmtRp(catVal)} <span class="text-slate-400 font-normal ml-1">(${catPct}%)</span></span>
+                    </div>
+                    <div class="w-full bg-slate-200/80 rounded-full h-2.5">
+                        <div class="h-2.5 rounded-full transition-all duration-300" style="width: ${catPct}%; background-color: ${catColor};"></div>
+                    </div>
+                </div>
+            `;
+
+            if (hasSubs) {
+                legendHTML += `<div id="subcat-${idx}-${i}" class="pl-3 mt-2.5 space-y-2.5 border-l-2 border-slate-200 ml-1 hidden">`;
+                
+                subEntries.forEach(([subName, info], j) => {
+                    const subVal = Math.abs(info.nominal || 0);
+                    const subPct = (info.persentase || 0).toFixed(2);
+                    
+                    const n = subEntries.length;
+                    const factor = n === 1
+                        ? SUB_LIGHTEN
+                        : SUB_LIGHTEN - (SUB_LIGHTEN - SUB_MIN_SHADE) * (j / (n - 1));
+                    const subColor = shade(catColor, factor);
+
+                    legendHTML += `
+                        <div class="w-full">
+                            <div class="flex justify-between items-end mb-1">
+                                <span class="text-[11px] font-semibold text-slate-600">${subName}</span>
+                                <span class="text-[10px] font-medium text-slate-500">${fmtRp(subVal)} <span class="text-slate-400 font-normal ml-1">(${subPct}%)</span></span>
+                            </div>
+                            <div class="w-full bg-slate-200/60 rounded-full h-1.5">
+                                <div class="h-1.5 rounded-full" style="width: ${subPct}%; background-color: ${subColor};"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                legendHTML += `</div>`;
+            }
         });
 
-        // Legend SUB-KATEGORI
-        const legendSub = document.getElementById(`legendSub-${idx}`);
-        subLabels.forEach((s, i) => {
-            const pct = (typeof subPcts[i] === 'number' ? subPcts[i] : parseFloat(subPcts[i]) || 0).toFixed(2);
-            legendSub.innerHTML += `<div class="flex items-center gap-1">
-                <span style="display:inline-block;width:8px;height:8px;background:${subColors[i]};border-radius:2px;"></span>
-                <span>${s} (${pct}%)</span></div>`;
-        });
+        groupedLegend.innerHTML = legendHTML;
     });
 })();
 
@@ -228,7 +318,6 @@ function parseMaybeJson(v){
     const pemasukan  = saldoHarianData.map(r => Number(r.pemasukan) || 0);
     const pengeluaran= saldoHarianData.map(r => Number(r.pengeluaran) || 0);
 
-    // ── Line total saldo
     new Chart(document.getElementById('chartSaldoLine'), {
         type: 'line',
         data: {
@@ -271,7 +360,6 @@ function parseMaybeJson(v){
         }
     });
 
-    // ── Bar pemasukan / pengeluaran
     new Chart(document.getElementById('chartSaldoBar'), {
         type: 'bar',
         data: {
@@ -321,10 +409,8 @@ function parseMaybeJson(v){
         return;
     }
 
-    // Daftar tanggal unik (sorted)
     const tanggalList = Array.from(new Set(saldoPerAkunData.map(r => r.tanggal))).sort();
 
-    // Pivot: { nama_akun: { tanggal: saldo } }
     const byAccount = {};
     saldoPerAkunData.forEach(r => {
         const name = (r.nama_akun || '').trim();
@@ -333,16 +419,14 @@ function parseMaybeJson(v){
         byAccount[name][r.tanggal] = Number(r.total_saldo_akhir) || 0;
     });
 
-    // Forward-fill nilai kosong
     Object.keys(byAccount).forEach(acc => {
         let last = null;
         tanggalList.forEach(t => {
             if (byAccount[acc][t] !== undefined) last = byAccount[acc][t];
-            else byAccount[acc][t] = last; // boleh null -> spanGaps
+            else byAccount[acc][t] = last; 
         });
     });
 
-    // Skala maksimum absolut tiap akun
     const maxAbs = {};
     Object.keys(byAccount).forEach(acc => {
         let m = 0;
@@ -353,7 +437,6 @@ function parseMaybeJson(v){
         maxAbs[acc] = m;
     });
 
-    // Kelompokkan
     const BATAS_BESAR = 1_000_000;
     const BATAS_SEDANG = 100_000;
     const akunBesar = [], akunSedang = [], akunKecil = [];

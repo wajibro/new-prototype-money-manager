@@ -1,135 +1,150 @@
 <%- include('partials/mainHeader') %>
+
+<!-- Navigasi Tab -->
 <div data-reveal class="grid grid-cols-4 gap-2 mb-6">
-    <a href="/akun_tabungan" class="bg-white/80 text-center text-[10px] font-bold text-gray-900 py-2.5 px-1 rounded-xl shadow-xs border border-blue-300 transition-all">Akun</a>
+    <a href="/akun_tabungan" class="bg-white/90 text-center text-[10px] font-bold text-gray-900 py-2.5 px-1 rounded-xl shadow-sm border border-blue-300 transition-all">Akun</a>
     <a href="/kategori?tab=pengeluaran" class="bg-white/60 hover:bg-white text-center text-[10px] font-medium text-gray-800 py-2.5 px-1 rounded-xl shadow-xs border border-white/30 transition-all">Kategori</a>
     <a href="/analisis" class="bg-white/60 hover:bg-white text-center text-[10px] font-medium text-gray-800 py-2.5 px-1 rounded-xl shadow-xs border border-white/30 transition-all">Analisis</a>
     <a href="/histori" class="bg-white/60 hover:bg-white text-center text-[10px] font-medium text-gray-800 py-2.5 px-1 rounded-xl shadow-xs border border-white/30 transition-all">History</a>
 </div>
+
 <div class="container">
+    <!-- ═══════════ FORM EDIT AKUN ═══════════ -->
     <% if (editAkun) { %>
-        <h3>Edit akun <%= editAkun.nama_akun %></h3>
-        <form action="/akun_tabungan/update/<%= editAkun.id_akun %>" method="POST">
-            <table border="1" cellpadding="5" cellspacing="0">
-                <tbody>
-                    <tr>
-                        <td>Nama Akun:</td>
-                        <td>
-                            <input type="text" name="input_nama_akun_baru" value="<%= editAkun.nama_akun %>" required>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Total:</td>
-                        <td>
-                            <input type="number" name="input_total_akun_baru" value="<%= editAkun.total_akun %>" required>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            <a href="/akun_tabungan">Batal</a>
-                            <button type="submit">Edit</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <p><%= message %></p>
-        </form>
-    <% } else if (transferAkun) { %>
-        <h3>Transfer Akun</h3>
-        <form action="/akun_tabungan/transfer/<%= transferAkun.id_akun %>" method="POST">
-            <table border="1" cellpadding="5" cellspacing="0">
-                <tr>
-                    <td>Dari akun:</td>
-                    <td><%= transferAkun.nama_akun %></td>
-                </tr>
-                <tr>
-                    <td>Kirim ke:</td>
-                    <td>
-                        <select name="target_transfer" required>
-                            <option value="">Pilih Tujuan Transfer</option>
-                            <% akunTabungan.forEach(function(p) { %>
-                                <% if (p.id_akun !== transferAkun.id_akun) { %>
-                                    <option value="<%= p.id_akun %>"><%= p.nama_akun %></option>
-                                <% } %>
-                            <% }); %>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Sejumlah:</td>
-                    <td>Rp
-                        <input type="number" name="input_total_transfer" min="1" step="1" required>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <a href="/akun_tabungan">Batal</a>
-                        <button type="submit">Transfer</button>
-                    </td>
-                </tr>
-            </table>
-            <br>
-        </form>
+        <div data-reveal="scale" class="bg-white/90 backdrop-blur-md rounded-2xl p-5 shadow-sm border border-white/40 mb-6">
+            <h3 class="text-sm font-bold text-slate-800 mb-4">Edit akun <%= editAkun.nama_akun %></h3>
+            <form action="/akun_tabungan/update/<%= editAkun.id_akun %>" method="POST" class="space-y-3">
+                <div class="flex flex-col">
+                    <label class="text-[10px] font-bold text-slate-700 mb-1">Nama Akun</label>
+                    <input type="text" name="input_nama_akun_baru" value="<%= editAkun.nama_akun %>" required class="w-full bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[10px] font-bold text-slate-700 mb-1">Total Saldo (Rp)</label>
+                    <input type="number" name="input_total_akun_baru" value="<%= editAkun.total_akun %>" required class="w-full bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <a href="/akun_tabungan" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-bold py-2 rounded-lg text-center transition-all">Batal</a>
+                    <button type="submit" class="flex-1 bg-[#1e3a8a] hover:bg-blue-800 text-white text-xs font-bold py-2 rounded-lg text-center transition-all shadow-md">Simpan Perubahan</button>
+                </div>
+            </form>
+            <% if (message) { %><p class="text-xs text-red-500 mt-2 font-semibold"><%= message %></p><% } %>
+        </div>
     <% } %>
 
-    <br>
-    <table border="1" cellpadding="5" cellspacing="0">
-        <thead>
-            <tr>
-                <th>Nama Akun</th>
-                <th>Total</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% akunTabungan.forEach(function(p) { %>
-                <tr>
-                    <td><%= p.nama_akun %></td>
-                    <td>
-                        Rp <%= p.total_akun.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %>
-                    </td>
-                    <td>
-                        <a href="/akun_tabungan?transfer_akun_id=<%= p.id_akun %>">Transfer</a>
-                        <a href="/akun_tabungan?edit_akun_id=<%= p.id_akun %>">Edit</a>
-                        <form action="/akun_tabungan/hapus/<%= p.id_akun %>" method="POST" style="display:inline;" onsubmit="return confirm('Hapus data?')">
-                            <button type="submit">Hapus</button>
-                        </form>
-                    </td>
-                </tr>
-            <% }); %>
-            <tr>
-                <td colspan="3">
-                    <a href="/akun_tabungan?tab=tambah_akun">Tambah akun tabungan</a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <!-- ═══════════ FORM TRANSFER (TAMBAH INPUT TANGGAL) ═══════════ -->
+    <% if (transferAkun) { %>
+        <div data-reveal="scale" class="bg-white/90 backdrop-blur-md rounded-2xl p-5 shadow-sm border border-white/40 mb-6">
+            <h3 class="text-sm font-bold text-slate-800 mb-4">Transfer dari akun <%= transferAkun.nama_akun %></h3>
+            <form action="/akun_tabungan/transfer/<%= transferAkun.id_akun %>" method="POST" class="space-y-3">
+                
+                <!-- TAMBAHAN: Input Tanggal Transfer -->
+                <div class="flex flex-col">
+                    <label class="text-[10px] font-bold text-slate-700 mb-1">Tanggal Transfer</label>
+                    <input type="date" name="input_tanggal_transfer" id="input_tanggal_transfer" required class="w-full bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
 
+                <div class="flex flex-col">
+                    <label class="text-[10px] font-bold text-slate-700 mb-1">Kirim ke Akun</label>
+                    <select name="target_transfer" required class="w-full bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- Pilih Tujuan Transfer --</option>
+                        <% akunTabungan.forEach(function(p) { %>
+                            <% if (p.id_akun !== transferAkun.id_akun) { %>
+                                <option value="<%= p.id_akun %>"><%= p.nama_akun %></option>
+                            <% } %>
+                        <% }); %>
+                    </select>
+                </div>
+                
+                <div class="flex flex-col">
+                    <label class="text-[10px] font-bold text-slate-700 mb-1">Nominal Transfer (Rp)</label>
+                    <input type="number" name="input_total_transfer" min="1" step="1" required class="w-full bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0">
+                </div>
+                
+                <div class="flex gap-2 pt-2">
+                    <a href="/akun_tabungan" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-bold py-2 rounded-lg text-center transition-all">Batal</a>
+                    <button type="submit" class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-slate-900 text-xs font-bold py-2 rounded-lg text-center transition-all shadow-md">Proses Transfer</button>
+                </div>
+            </form>
+        </div>
+    <% } %>
+
+    <!-- ═══════════ FORM TAMBAH AKUN ═══════════ -->
     <% if (tab === 'tambah_akun') { %>
-    <form action="/akun_tabungan/tambah" method="POST">
-        <table border="1" cellpadding="5" cellspacing="0">
-            <tbody>
-                <tr>
-                    <td>Nama Akun:</td>
-                    <td>
-                        <input type="text" name="input_nama_akun" required>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Jumlah Awal:</td>
-                    <td>Rp
-                        <input type="number" name="input_total" required>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <button type="button"><a href="/akun_tabungan">Batal</a></button>
-                        <button type="submit">Tambah Akun</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <p><%= message %></p>
-    </form>
+        <div data-reveal="scale" class="bg-white/90 backdrop-blur-md rounded-2xl p-5 shadow-sm border border-white/40 mb-6">
+            <h3 class="text-sm font-bold text-slate-800 mb-4">Tambah Akun Tabungan Baru</h3>
+            <form action="/akun_tabungan/tambah" method="POST" class="space-y-3">
+                <div class="flex flex-col">
+                    <label class="text-[10px] font-bold text-slate-700 mb-1">Nama Akun</label>
+                    <input type="text" name="input_nama_akun" required class="w-full bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Misal: Bank Mandiri, Dana, dll">
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[10px] font-bold text-slate-700 mb-1">Jumlah Awal (Rp)</label>
+                    <input type="number" name="input_total" required class="w-full bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <a href="/akun_tabungan" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-bold py-2 rounded-lg text-center transition-all">Batal</a>
+                    <button type="submit" class="flex-1 bg-[#1c9c4b] hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-lg text-center transition-all shadow-md">Tambah Akun</button>
+                </div>
+            </form>
+            <% if (message) { %><p class="text-xs text-red-500 mt-2 font-semibold"><%= message %></p><% } %>
+        </div>
     <% } %>
+
+    <!-- ═══════════ DAFTAR KARTU AKUN ═══════════ -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">
+        <% akunTabungan.forEach(function(p) { %>
+            <div data-reveal class="bg-white/80 backdrop-blur-md rounded-2xl p-4 shadow-sm border border-white/40 flex flex-col justify-between relative overflow-hidden">
+                
+                <!-- Header Card: Nama & Tombol Hapus -->
+                <div class="flex justify-between items-start mb-2 pr-6">
+                    <h4 class="font-bold text-slate-800 text-sm truncate"><%= p.nama_akun %></h4>
+                    <form action="/akun_tabungan/hapus/<%= p.id_akun %>" method="POST" class="absolute top-3 right-3" onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun ini?')">
+                        <button type="submit" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-full transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Saldo -->
+                <div class="text-slate-800 font-bold text-sm mb-4">
+                    Rp <%= p.total_akun.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %>
+                </div>
+
+                <!-- Tombol Aksi: Transfer & Edit -->
+                <div class="flex gap-2 mt-auto">
+                    <a href="/akun_tabungan?transfer_akun_id=<%= p.id_akun %>" class="flex-1 bg-[#facc15] hover:bg-yellow-500 text-slate-900 text-xs font-bold py-2 rounded-xl text-center shadow-sm flex items-center justify-center gap-1 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                        </svg>
+                        Transfer
+                    </a>
+                    <a href="/akun_tabungan?edit_akun_id=<%= p.id_akun %>" class="bg-white hover:bg-gray-50 text-slate-700 text-xs font-bold py-2 px-3 rounded-xl text-center shadow-sm border border-gray-200 transition-colors">Edit</a>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+
+    <!-- Tombol Tambah Akun Baru -->
+    <div data-reveal class="flex justify-center mt-2 mb-8">
+        <a href="/akun_tabungan?tab=tambah_akun" class="bg-white/70 hover:bg-white text-slate-700 text-xs font-bold py-2.5 px-6 rounded-full shadow-sm border border-white/40 transition-all flex items-center gap-2">
+            <span class="text-lg leading-none">+</span> Tambah akun tabungan
+        </a>
+    </div>
 </div>
+
+<!-- Script untuk set default tanggal hari ini pada form transfer -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const hariIni = new Date();
+        const tanggalLokal = `${hariIni.getFullYear()}-${String(hariIni.getMonth() + 1).padStart(2, '0')}-${String(hariIni.getDate()).padStart(2, '0')}`;
+        
+        const inputTanggalTransfer = document.getElementById('input_tanggal_transfer');
+        if (inputTanggalTransfer) {
+            inputTanggalTransfer.value = tanggalLokal;
+        }
+    });
+</script>
+
 <%- include('partials/mainFooter') %>

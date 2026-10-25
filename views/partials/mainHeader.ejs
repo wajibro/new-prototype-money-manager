@@ -41,28 +41,94 @@
             </a>
         </div>
 
-        <div data-reveal data-reveal-delay="80" class="bg-white/60 backdrop-blur-md rounded-2xl p-6 shadow-md relative mb-6 text-slate-800">
-            <div class="text-sm font-medium opacity-90 mb-1">Saldo saat ini</div>
-            <div class="flex items-center gap-3 mb-6">
-                <span class="text-3xl font-bold tracking-tight text-slate-900"><%= typeof totalSaldo !== 'undefined' ? totalSaldo : 'Rp 0' %></span>
-            </div>
+        <!-- ═══════════ HEADER SALDO DENGAN BACKGROUND GAMBAR ═══════════ -->
+        <!-- Menggunakan bg-[url('/bg_header.jpg')] untuk memanggil gambar dari folder public -->
+        <div data-reveal data-reveal-delay="80" class="relative overflow-hidden rounded-3xl mb-6 shadow-sm border border-slate-200/60 bg-[url('/bg_header.jpg')] bg-cover bg-center bg-no-repeat">
+            
+            <!-- Overlay Gradasi Kiri agar Teks Terbaca -->
+            <!-- Warna putih/abu-abu transparan di kiri, memudar ke transparan di kanan -->
+            <div class="absolute inset-0 bg-gradient-to-r from-[#f4f9fd]/95 via-[#f4f9fd]/70 to-transparent pointer-events-none"></div>
 
-            <div class="flex gap-10">
-                <div>
-                    <div class="text-emerald-700 font-semibold text-sm flex items-center gap-1 mb-0.5">
-                        <span class="text-base font-bold">↓</span> Pemasukan<br>
-                    </div>
-                    <div class="text-emerald-700 font-bold"><%= typeof totalPemasukan !== 'undefined' ? totalPemasukan : 'Rp 0' %></div>
+            <!-- Konten Saldo (Diberi padding di sini agar overlay menutupi seluruh area) -->
+            <div class="relative z-10 p-6">
+                <div class="text-sm font-medium text-slate-800 mb-1">Saldo saat ini</div>
+                
+                <!-- Angka Saldo & Tombol Hide/Show (Tombol di Kiri) -->
+                <div class="flex items-center gap-2 sm:gap-3 mb-6">
+                    <!-- Tombol Hide/Show -->
+                    <button id="toggleSaldoBtn" type="button" class="text-slate-500 hover:text-slate-900 transition-colors p-1 rounded-full focus:outline-none mt-1" title="Sembunyikan Saldo">
+                        <svg id="eyeOpenIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        <svg id="eyeClosedIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                        </svg>
+                    </button>
+
+                    <!-- Teks Saldo -->
+                    <span id="teksSaldo" 
+                          class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 transition-all duration-200 drop-shadow-sm"
+                          data-real-value="<%= typeof totalSaldo !== 'undefined' ? totalSaldo : 'Rp 0' %>">
+                        <%= typeof totalSaldo !== 'undefined' ? totalSaldo : 'Rp 0' %>
+                    </span>
                 </div>
 
-                <div>
-                    <div class="text-red-700 font-semibold text-sm flex items-center gap-1 mb-0.5">
-                        <span class="text-base font-bold">↑</span> Pengeluaran<br>
+                <div class="flex gap-10">
+                    <div>
+                        <div class="text-slate-700 font-medium text-xs flex items-center gap-1 mb-1 drop-shadow-sm">
+                            <span class="text-sm font-bold">↑</span> Pemasukan
+                        </div>
+                        <div class="text-emerald-700 font-bold text-sm sm:text-base drop-shadow-sm"><%= typeof totalPemasukan !== 'undefined' ? totalPemasukan : 'Rp 0' %></div>
                     </div>
-                    <div class="text-red-700 font-bold"><%= typeof totalPengeluaran !== 'undefined' ? totalPengeluaran : 'Rp 0' %></div>
+
+                    <div>
+                        <div class="text-slate-700 font-medium text-xs flex items-center gap-1 mb-1 drop-shadow-sm">
+                            <span class="text-sm font-bold">↓</span> Pengeluaran
+                        </div>
+                        <div class="text-red-700 font-bold text-sm sm:text-base drop-shadow-sm"><%= typeof totalPengeluaran !== 'undefined' ? totalPengeluaran : 'Rp 0' %></div>
+                    </div>
                 </div>
             </div>
         </div>
+        <!-- ═══════════ END HEADER SALDO ═══════════ -->
+
         <% if (typeof message !== 'undefined' && message) { %>
             <div data-reveal="fade" class="alert"><%= message %></div>
         <% } %>
+        
+        <script>
+            // Logika untuk Hide/Show Saldo
+            document.addEventListener('DOMContentLoaded', function() {
+                const toggleBtn = document.getElementById('toggleSaldoBtn');
+                const teksSaldo = document.getElementById('teksSaldo');
+                const eyeOpen = document.getElementById('eyeOpenIcon');
+                const eyeClosed = document.getElementById('eyeClosedIcon');
+                
+                // Cek status terakhir di localStorage
+                let isHidden = localStorage.getItem('hideSaldo') === 'true';
+
+                function updateTampilanSaldo() {
+                    const realValue = teksSaldo.dataset.realValue;
+                    if (isHidden) {
+                        teksSaldo.textContent = 'Rp ••••••••';
+                        eyeOpen.classList.add('hidden');
+                        eyeClosed.classList.remove('hidden');
+                    } else {
+                        teksSaldo.textContent = realValue;
+                        eyeOpen.classList.remove('hidden');
+                        eyeClosed.classList.add('hidden');
+                    }
+                }
+
+                // Jalankan saat halaman dimuat
+                updateTampilanSaldo();
+
+                // Event listener tombol
+                toggleBtn.addEventListener('click', function() {
+                    isHidden = !isHidden;
+                    localStorage.setItem('hideSaldo', isHidden);
+                    updateTampilanSaldo();
+                });
+            });
+        </script>

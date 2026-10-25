@@ -105,19 +105,21 @@ export const updateAkun = async (req: Request, res: Response, next: NextFunction
 export const prosesTransfer = async (req: Request, res: Response, next: NextFunction):Promise<void> => {
     try{
         const { id } = req.params;
-        const { target_transfer, input_total_transfer } = req.body;
+        // TAMBAHAN: Tangkap input_tanggal_transfer dari body
+        const { target_transfer, input_total_transfer, input_tanggal_transfer } = req.body; 
         const totalTransfer = parseFloat(input_total_transfer || 0);
 
         const akunSumber = await selectTable('akun_tabungan', { eqCol: 'id_akun', eqRow: id});
         const akunTarget = await selectTable('akun_tabungan', { eqCol: 'id_akun', eqRow: target_transfer});
 
         if (!akunSumber || akunSumber.length === 0 || !akunTarget || akunTarget.length === 0) {
-            res.redirect('/akun?message=Gagal memproses transfer, akun tidak ditemukan');
+            res.redirect('/akun_tabungan?message=Gagal memproses transfer, akun tidak ditemukan');
             return;
         }
 
         await insertTable('data_historis', {
-            tanggal: new Date().toISOString().slice(0, 10),
+            // UBAH BAGIAN INI: Gunakan input_tanggal_transfer dari form
+            tanggal: input_tanggal_transfer || new Date().toISOString().slice(0, 10), 
             id_akun_src: id,
             id_akun_target: target_transfer,
             jenis: 'Transfer',
@@ -133,7 +135,6 @@ export const prosesTransfer = async (req: Request, res: Response, next: NextFunc
         return;
     }
 };
-
 export const hapusAkun = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { id } = req.params;
