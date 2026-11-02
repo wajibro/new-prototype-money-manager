@@ -36,24 +36,25 @@ export const showHistoriPage = async (req: Request, res: Response, next: NextFun
         const akunMap = new Map<string, string>();
         listAkun.forEach((a: any) => akunMap.set(String(a.id_akun), a.nama_akun));
 
-        // Ambil semua data histori + relasi src & kategori (join hanya untuk kolom yang punya FK)
         const rawData = await selectTable('data_historis', {
             select: `
                 id_histori,
                 tanggal,
                 jenis,
                 sub_kategori,
+                note,
                 perubahan,
                 id_akun_src,
                 id_akun_target,
+                id_prioritas,
                 id_kategori,
                 akun_tabungan!id_akun_src ( nama_akun ),
+                prioritas!id_prioritas ( nama_prioritas, jenis ),
                 kategori!id_kategori ( nama_kategori )
             `,
             order1: 'id_histori',
             order1State: true
         });
-
         const allData = rawData || [];
 
         // Daftar bulan yang tersedia dari data histori
@@ -109,23 +110,28 @@ export const showHistoriPage = async (req: Request, res: Response, next: NextFun
                 if (p.jenis === 'Pengeluaran') pengeluaranSehariNum += Math.abs(nilai);
 
                 const resAkun = p.akun_tabungan as any;
+                const resPrioritas = p.prioritas as any;
                 const resKategori = p.kategori as any;
 
-                // Resolve nama akun target via Map (tidak butuh FK)
                 const namaAkunTarget = p.id_akun_target
                     ? (akunMap.get(String(p.id_akun_target)) || 'Akun Terhapus')
                     : '-';
 
                 return {
                     id: p.id_histori,
+                    id_prioritas: p.id_prioritas,
                     id_kategori: p.id_kategori,
                     tanggal: p.tanggal,
                     jenis: p.jenis,
-                    sub_kategori: p.sub_kategori,
+                    // Tampilan prioritas: pakai join, fallback ke label generik untuk row lama
+                    nama_prioritas: resPrioritas?.nama_prioritas || '—',
+                    // Kategori: pakai join, fallback ke sub_kategori (legacy)
+                    nama_kategori: resKategori?.nama_kategori || p.sub_kategori || '-',
+                    sub_kategori: p.sub_kategori,     // tetap dikirim untuk filter lama jika perlu
+                    note: p.note || '',
                     perubahan: p.perubahan,
                     nama_akun: resAkun?.nama_akun || 'Akun Terhapus',
-                    nama_akun_target: namaAkunTarget,
-                    nama_kategori: resKategori?.nama_kategori || ''
+                    nama_akun_target: namaAkunTarget
                 };
             });
 
@@ -141,16 +147,16 @@ export const showHistoriPage = async (req: Request, res: Response, next: NextFun
             };
         });
 
-        const listKategori = await selectTable('kategori', { order1: 'id_kategori' });
+        const prioritas = await selectTable('prioritas', { order1: 'id_prioritas' });
+        const kategori = await selectTable('kategori', { order1: 'nama_kategori' });
 
         res.render('histori', {
-            totalSaldo,
-            totalPengeluaran,
-            totalPemasukan,
+            totalSaldo, totalPengeluaran, totalPemasukan,
             dataHistoris: dataHistorisRender,
             editHistori,
             akunTabungan: listAkun,
-            kategori: listKategori,
+            prioritas,
+            kategori,
             message,
             filterAktif: filter,
             bulanAktif,
@@ -168,46 +174,41 @@ export const updateHistori = async (req: Request, res: Response, next: NextFunct
         const { id } = req.params;
         const {
             input_nama_akun_baru,
+            input_prioritas_baru,
             input_kategori_baru,
-            input_sub_kategori_baru,
+            input_note_baru,
             input_perubahan_baru,
             input_tanggal_baru
         } = req.body;
+
         const perubahanBaru = parseFloat(input_perubahan_baru || 0);
 
         const akunQuery = await selectTable('akun_tabungan', {
-            select: 'id_akun',
-            eqCol: 'nama_akun',
-            eqRow: input_nama_akun_baru
+            select: 'id_akun', eqCol: 'nama_akun', eqRow: input_nama_akun_baru
         });
-        const katQuery = await selectTable('kategori', {
-            select: 'id_kategori',
-            eqCol: 'nama_kategori',
-            eqRow: input_kategori_baru
-        });
+        const katQuery = await selectTable('kategori', { eqCol: 'id_kategori', eqRow: input_kategori_baru });
+        const namaKategori = katQuery[0]?.nama_kategori;
 
-        if (!akunQuery || akunQuery.length === 0 || !katQuery || katQuery.length === 0) {
+        if (!akunQuery || akunQuery.length === 0 || !namaKategori) {
             res.redirect('/histori?message=Gagal memperbarui, relasi ID tidak valid');
             return;
         }
 
         await updateTable('data_historis', {
             id_akun_src: akunQuery[0]?.id_akun,
-            id_kategori: katQuery[0]?.id_kategori,
-            sub_kategori: String(input_sub_kategori_baru || '').trim(),
+            id_prioritas: input_prioritas_baru,
+            id_kategori: input_kategori_baru,
+            sub_kategori: namaKategori,
+            note: String(input_note_baru || '').trim() || null,
             perubahan: perubahanBaru,
             tanggal: input_tanggal_baru
         }, 'id_histori', id);
 
-        // Pertahankan filter setelah update
         const filter = (req.query.filter as string) === 'all' ? 'all' : 'bulan';
         const bulan = (req.query.bulan as string) || getBulanSekarang();
         res.redirect(`/histori?filter=${filter}&bulan=${bulan}`);
         return;
-    } catch (error) {
-        next(error);
-        return;
-    }
+    } catch (error) { next(error); return; }
 };
 
 export const hapusHistori = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

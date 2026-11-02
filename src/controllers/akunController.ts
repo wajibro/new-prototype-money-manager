@@ -27,7 +27,6 @@ export const showAkunPage = async (req: Request, res: Response, next: NextFuncti
 
         const pemasukanQuery = await selectTable('view_recap_bulanan', { eqCol: 'bulan', eqRow: bulanIni});
         const totalPemasukan = formatRupiah(parseFloat(pemasukanQuery[0]?.total_pemasukan));
-
         const akunTabungan = await selectTable('akun_tabungan', { order1: 'id_akun'});
 
         let editAkun = null;
@@ -105,8 +104,8 @@ export const updateAkun = async (req: Request, res: Response, next: NextFunction
 export const prosesTransfer = async (req: Request, res: Response, next: NextFunction):Promise<void> => {
     try{
         const { id } = req.params;
-        // TAMBAHAN: Tangkap input_tanggal_transfer dari body
-        const { target_transfer, input_total_transfer, input_tanggal_transfer } = req.body; 
+
+        const { target_transfer, input_total_transfer, input_tanggal_transfer, input_note_transfer } = req.body;
         const totalTransfer = parseFloat(input_total_transfer || 0);
 
         const akunSumber = await selectTable('akun_tabungan', { eqCol: 'id_akun', eqRow: id});
@@ -118,13 +117,14 @@ export const prosesTransfer = async (req: Request, res: Response, next: NextFunc
         }
 
         await insertTable('data_historis', {
-            // UBAH BAGIAN INI: Gunakan input_tanggal_transfer dari form
-            tanggal: input_tanggal_transfer || new Date().toISOString().slice(0, 10), 
+            tanggal: input_tanggal_transfer || new Date().toISOString().slice(0, 10),
             id_akun_src: id,
             id_akun_target: target_transfer,
             jenis: 'Transfer',
+            id_prioritas: null,
             id_kategori: null,
             sub_kategori: 'Transfer',
+            note: String(input_note_transfer || '').trim() || null,
             perubahan: totalTransfer
         });
 
